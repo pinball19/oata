@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>販売店ダッシュボード</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- EmailJS -->
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    // EmailJS 初期化（YOUR_EMAILJS_PUBLIC_KEY をご自身のものに置換）
+    emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
+
+    // Firebase 初期化（login.htmlと同じ設定を使用）
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <h1>販売店ダッシュボード</h1>
+  <p id="welcomeMsg"></p>
+  <button onclick="showForm()">＋ 新しい案件を作成</button>
+  
+  <!-- 案件作成フォーム（初期は非表示） -->
+  <div id="newCaseForm" style="display: none; border: 1px solid #ccc; padding: 10px; margin-top:10px;">
+    <h2>案件情報を入力</h2>
+    <label>案件名: <input type="text" id="caseTitle"></label><br>
+    <label>質問内容: <textarea id="caseQuestion"></textarea></label><br>
+    <label>希望納期: <input type="date" id="caseDeadline"></label><br>
+    <button onclick="createNewCase()">保存</button>
+  </div>
+
+  <h3>過去半年の案件</h3>
+  <div id="caseList"></div>
+  <button onclick="downloadCSV()">CSV ダウンロード</button>
+
+  <script>
+    const db = firebase.firestore();
+
+    // URLのクエリパラメータまたはlocalStorageから販売店IDを取得
+    const urlParams = new URLSearchParams(window.location.search);
+    let companyId = urlParams.get("company") || localStorage.getItem("company_id");
+    if (!companyId) {
+      alert("ログインしてください");
+      window.location.href = "login.html";
+    }
+    document.getElementById("welcomeMsg").innerText = "ようこそ、" + companyId + " 様";
+
+    // 「新しい案件を作成」ボタンでフォームを表示
+    function showForm() {
+      document.getElementById("newCaseForm").style.display = "block";
+    }
+
+    // 新しい案件を作成し、Firestore に保存
+    function createNewCase() {
+      const caseTitle = document.getElementById("caseTitle").value.trim();
+      const caseQuestion = document.getElementById("caseQuestion").value.trim();
+      const caseDeadline = document.getElementById("caseDeadline").value;
+      if (!caseTitle || !caseQuestion || !caseDeadline) {
+        alert("すべての項目を入力してください");
+        return;
+      }
+      db.collection("companies").doc(companyId).collection("threads").add({
+        caseTitle: caseTitle,
+        caseQuestion: caseQuestion,
+        caseDeadline: caseDeadline,
+        last_updated: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        alert("案件が作成されました！");
+        document.getElementById("newCaseForm").style.display = "none";
+        // 入力欄をクリア
+        document.getElementById("caseTitle").value = "";
+        document.getElementById("caseQuestion").value = "";
+        document.getElementById("caseDeadline").value = "";
+      })
+      .catch(error => {
+        console.error("Error creating new case:", error);
+      });
+    }
+
+    // 過去半年分の案件をリアルタイムで表示
+    function loadCases() {
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      
+      db.collection("companies").doc(companyId).collection("threads")
+        .where("last_updated", ">=", sixMonthsAgo)
+        .orderBy("last_updated", "desc")
+        .onSnapshot(snapshot => {
+          const caseListDiv = document.getElementById("caseList");
+          caseListDiv.innerHTML = "";
+          if (snapshot.empty) {
+            caseListDiv.innerHTML = "<p>過去半年の案件はありません</p>";
+          }
+          snapshot.forEach(doc => {
+            const caseData = doc.data();
+            const caseId = doc.id;
+            let updatedDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
+            let div = document.createElement("div");
+            div.innerHTML = `
+              <h3>${caseData.caseTitle} - ${caseData.caseDeadline}</h3>
+              <p>${caseData.caseQuestion}</p>
+              <p>更新日時: ${updatedDate}</p>
+              <a href="thread.html?company=${companyId}&thread=${caseId}">詳細を見る</a>
+              <hr>
+            `;
+            caseListDiv.appendChild(div);
+          });
+        });
+    }
+    loadCases();
+
+    // CSVダウンロード機能
+    async function downloadCSV() {
+      const snapshot = await db.collection("companies").doc(companyId).collection("threads")
+        .orderBy("last_updated", "desc")
+        .get();
+
+      let csvContent = "data:text/csv;charset=utf-8,案件名,質問内容,希望納期,作成日\n";
+      snapshot.forEach(doc => {
+        const caseData = doc.data();
+        const createdDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
+        // ダブルクオートのエスケープ
+        const title = caseData.caseTitle.replace(/"/g, '""');
+        const question = caseData.caseQuestion.replace(/"/g, '""');
+        const deadline = caseData.caseDeadline;
+        csvContent += `"${title}","${question}","${deadline}","${createdDate}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `案件リスト_${companyId}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
