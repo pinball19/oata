@@ -1,86 +1,100 @@
 /* style.css */
 
-/* ベーススタイル */
+/* グローバルスタイル */
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  background-color: #f0f8ff; /* 薄い青（AliceBlue） */
+  font-family: 'Roboto', sans-serif;
+  background-color: #ffffff; /* 白背景で読みやすく */
   color: #333;
   line-height: 1.6;
+  padding: 20px;
 }
 
 .container {
-  max-width: 960px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 20px;
 }
 
 /* ヘッダー */
-header {
-  background-color: #87cefa; /* Light Sky Blue */
-  color: #fff;
-  padding: 1rem;
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #004080; /* ダークブルー */
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 見出し */
-h1, h2, h3 {
-  margin: 1rem 0 0.5rem;
-  font-weight: 600;
+/* セクション見出し */
+h2, h3 {
+  color: #0056b3;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+/* 案件詳細表示 */
+#caseDetails {
+  background-color: #f7faff; /* 非常に薄い青 */
+  border: 1px solid #d0e4f7;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* コメント一覧 */
+#commentsList {
+  background-color: #f7faff;
+  border: 1px solid #d0e4f7;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+#commentsList p {
+  background-color: #e9f2fb;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+/* 新規コメント入力 */
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd6e2;
+  border-radius: 6px;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 80px;
+  box-sizing: border-box;
 }
 
 /* ボタン */
 button {
-  background-color: #87cefa;
-  border: none;
+  background-color: #0056b3;
   color: #fff;
-  padding: 0.75rem 1.25rem;
+  border: none;
+  padding: 10px 20px;
   font-size: 1rem;
+  border-radius: 6px;
   cursor: pointer;
-  border-radius: 4px;
   transition: background-color 0.3s ease;
 }
+
 button:hover {
-  background-color: #00bfff; /* DeepSkyBlue */
+  background-color: #003d80;
 }
 
-/* フォーム要素 */
-input[type="text"],
-input[type="password"],
-input[type="date"],
-textarea {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 1rem;
-}
-
-/* リンク */
-a {
-  color: #00bfff;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-}
-
-/* セクションやフォームの枠 */
-form, .form-container, .card {
-  background-color: #e6f7ff; /* 薄い青 */
-  padding: 1rem;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 1rem;
-}
-
-/* HR */
-hr {
-  border: none;
-  border-top: 1px solid #ccc;
-  margin: 1rem 0;
+/* レスポンシブ対応 */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  button {
+    width: 100%;
+  }
 }
