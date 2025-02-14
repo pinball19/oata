@@ -10,7 +10,10 @@
   <!-- EmailJS -->
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <script>
+    // EmailJS 初期化（YOUR_EMAILJS_PUBLIC_KEY をご自身のものに置換）
     emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
+
+    // Firebase 初期化（login.htmlと同じ設定を使用）
     const firebaseConfig = {
       apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
       authDomain: "oata-8c05b.firebaseapp.com",
@@ -34,7 +37,9 @@
       <h2>案件情報を入力</h2>
       <label>案件名: <input type="text" id="caseTitle"></label><br>
       <label>出発地: <input type="text" id="departure"></label><br>
+      <label>出発日: <input type="date" id="departureDate"></label><br>
       <label>帰着地: <input type="text" id="arrival"></label><br>
+      <label>帰着日: <input type="date" id="arrivalDate"></label><br>
       <label>マル契種類: <input type="text" id="contractType"></label><br>
       <label>金額（予定）: <input type="number" id="estimatedPrice"></label><br>
       <label>金額（確定）: <input type="number" id="confirmedPrice"></label><br>
@@ -57,14 +62,18 @@
     }
     document.getElementById("welcomeMsg").innerText = "ようこそ、" + companyId + " 様";
 
+    // フォーム表示切替
     function showForm() {
       document.getElementById("newCaseForm").style.display = "block";
     }
 
+    // 新規案件作成：フォーム入力内容をFirestoreに保存
     function createNewCase() {
       const caseTitle = document.getElementById("caseTitle").value.trim();
       const departure = document.getElementById("departure").value.trim();
+      const departureDate = document.getElementById("departureDate").value;
       const arrival = document.getElementById("arrival").value.trim();
+      const arrivalDate = document.getElementById("arrivalDate").value;
       const contractType = document.getElementById("contractType").value.trim();
       const estimatedPrice = document.getElementById("estimatedPrice").value.trim();
       const confirmedPrice = document.getElementById("confirmedPrice").value.trim();
@@ -78,7 +87,9 @@
       db.collection("companies").doc(companyId).collection("threads").add({
         caseTitle: caseTitle,
         departure: departure,
+        departureDate: departureDate,
         arrival: arrival,
+        arrivalDate: arrivalDate,
         contractType: contractType,
         estimatedPrice: estimatedPrice,
         confirmedPrice: confirmedPrice,
@@ -88,9 +99,12 @@
       .then(() => {
         alert("案件が作成されました！");
         document.getElementById("newCaseForm").style.display = "none";
+        // 入力欄をクリア
         document.getElementById("caseTitle").value = "";
         document.getElementById("departure").value = "";
+        document.getElementById("departureDate").value = "";
         document.getElementById("arrival").value = "";
+        document.getElementById("arrivalDate").value = "";
         document.getElementById("contractType").value = "";
         document.getElementById("estimatedPrice").value = "";
         document.getElementById("confirmedPrice").value = "";
@@ -101,6 +115,7 @@
       });
     }
 
+    // 案件一覧表示（過去半年分の案件）
     function loadCases() {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -120,15 +135,20 @@
             let updatedDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
             let div = document.createElement("div");
             div.className = "project-card";
+            // 案件名のみヘッダーとして表示
             div.innerHTML = `
-              <h3>${caseData.caseTitle} - ${caseData.contractType}</h3>
+              <h3>${caseData.caseTitle}</h3>
               <p>出発地: ${caseData.departure}</p>
+              <p>出発日: ${caseData.departureDate || "-"}</p>
               <p>帰着地: ${caseData.arrival}</p>
-              <p>金額（予定）: ${caseData.estimatedPrice}</p>
-              <p>金額（確定）: ${caseData.confirmedPrice}</p>
-              <p>備考: ${caseData.remarks}</p>
+              <p>帰着日: ${caseData.arrivalDate || "-"}</p>
+              <p>金額（予定）: ${caseData.estimatedPrice || "-"}</p>
+              <p>金額（確定）: ${caseData.confirmedPrice || "-"}</p>
+              <p>備考: ${caseData.remarks || "-"}</p>
               <p>更新日時: ${updatedDate}</p>
               <a href="thread.html?company=${companyId}&thread=${caseId}">詳細を見る</a>
+              <button onclick="editCase('${caseId}')">編集</button>
+              <div id="editForm_${caseId}" style="display:none; margin-top:10px;"></div>
             `;
             caseListDiv.appendChild(div);
           });
@@ -136,23 +156,96 @@
     }
     loadCases();
 
+    // 編集フォーム表示（各案件ごと）
+    async function editCase(caseId) {
+      const existingForm = document.getElementById("editForm_" + caseId);
+      // 既にフォームが表示されている場合は閉じる
+      if (existingForm.innerHTML.trim() !== "") {
+        existingForm.innerHTML = "";
+        return;
+      }
+      const docRef = db.collection("companies").doc(companyId).collection("threads").doc(caseId);
+      const docSnap = await docRef.get();
+      if (!docSnap.exists) {
+        alert("案件が見つかりません");
+        return;
+      }
+      const data = docSnap.data();
+      const formHtml = `
+        <h4>編集フォーム</h4>
+        <label>案件名: <input type="text" id="edit_caseTitle_${caseId}" value="${data.caseTitle}"></label><br>
+        <label>出発地: <input type="text" id="edit_departure_${caseId}" value="${data.departure}"></label><br>
+        <label>出発日: <input type="date" id="edit_departureDate_${caseId}" value="${data.departureDate || ''}"></label><br>
+        <label>帰着地: <input type="text" id="edit_arrival_${caseId}" value="${data.arrival}"></label><br>
+        <label>帰着日: <input type="date" id="edit_arrivalDate_${caseId}" value="${data.arrivalDate || ''}"></label><br>
+        <label>マル契種類: <input type="text" id="edit_contractType_${caseId}" value="${data.contractType}"></label><br>
+        <label>金額（予定）: <input type="number" id="edit_estimatedPrice_${caseId}" value="${data.estimatedPrice || ''}"></label><br>
+        <label>金額（確定）: <input type="number" id="edit_confirmedPrice_${caseId}" value="${data.confirmedPrice || ''}"></label><br>
+        <label>備考: <textarea id="edit_remarks_${caseId}">${data.remarks || ''}</textarea></label><br>
+        <button onclick="saveEdit('${caseId}')">保存</button>
+      `;
+      existingForm.innerHTML = formHtml;
+    }
+
+    async function saveEdit(caseId) {
+      const newCaseTitle = document.getElementById("edit_caseTitle_" + caseId).value.trim();
+      const newDeparture = document.getElementById("edit_departure_" + caseId).value.trim();
+      const newDepartureDate = document.getElementById("edit_departureDate_" + caseId).value;
+      const newArrival = document.getElementById("edit_arrival_" + caseId).value.trim();
+      const newArrivalDate = document.getElementById("edit_arrivalDate_" + caseId).value;
+      const newContractType = document.getElementById("edit_contractType_" + caseId).value.trim();
+      const newEstimatedPrice = document.getElementById("edit_estimatedPrice_" + caseId).value.trim();
+      const newConfirmedPrice = document.getElementById("edit_confirmedPrice_" + caseId).value.trim();
+      const newRemarks = document.getElementById("edit_remarks_" + caseId).value.trim();
+
+      const updatedData = {
+        caseTitle: newCaseTitle,
+        departure: newDeparture,
+        departureDate: newDepartureDate,
+        arrival: newArrival,
+        arrivalDate: newArrivalDate,
+        contractType: newContractType,
+        estimatedPrice: newEstimatedPrice,
+        confirmedPrice: newConfirmedPrice,
+        remarks: newRemarks,
+        last_updated: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        await db.collection("companies").doc(companyId).collection("threads").doc(caseId).update(updatedData);
+        alert("案件が更新されました！");
+        document.getElementById("editForm_" + caseId).innerHTML = "";
+        // 編集内容をコメントとして追加する
+        const editComment = {
+          name: "編集",
+          text: `編集内容: 案件名: ${newCaseTitle}, 出発地: ${newDeparture}, 出発日: ${newDepartureDate}, 帰着地: ${newArrival}, 帰着日: ${newArrivalDate}, 金額（予定）: ${newEstimatedPrice}, 金額（確定）: ${newConfirmedPrice}, 備考: ${newRemarks}`,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        await db.collection("companies").doc(companyId).collection("threads").doc(caseId).collection("comments").add(editComment);
+      } catch (error) {
+        console.error("Error updating case:", error);
+      }
+    }
+
     async function downloadCSV() {
       const snapshot = await db.collection("companies").doc(companyId).collection("threads")
         .orderBy("last_updated", "desc")
         .get();
 
-      let csvContent = "data:text/csv;charset=utf-8,案件名,出発地,帰着地,マル契種類,金額（予定）,金額（確定）,備考,作成日\n";
+      let csvContent = "data:text/csv;charset=utf-8,案件名,出発地,出発日,帰着地,帰着日,マル契種類,金額（予定）,金額（確定）,備考,作成日\n";
       snapshot.forEach(doc => {
         const caseData = doc.data();
         const createdDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
         const title = caseData.caseTitle.replace(/"/g, '""');
         const departure = caseData.departure.replace(/"/g, '""');
+        const departureDate = caseData.departureDate;
         const arrival = caseData.arrival.replace(/"/g, '""');
+        const arrivalDate = caseData.arrivalDate;
         const contractType = caseData.contractType.replace(/"/g, '""');
         const estimatedPrice = caseData.estimatedPrice;
         const confirmedPrice = caseData.confirmedPrice;
-        const remarks = caseData.remarks.replace(/"/g, '""');
-        csvContent += `"${title}","${departure}","${arrival}","${contractType}","${estimatedPrice}","${confirmedPrice}","${remarks}","${createdDate}"\n`;
+        const remarks = (caseData.remarks || "").replace(/"/g, '""');
+        csvContent += `"${title}","${departure}","${departureDate}","${arrival}","${arrivalDate}","${contractType}","${estimatedPrice}","${confirmedPrice}","${remarks}","${createdDate}"\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
