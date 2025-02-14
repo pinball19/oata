@@ -1,0 +1,86 @@
+/* style.css */
+
+/* ベーススタイル */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f0f8ff; /* 薄い青（AliceBlue） */
+  color: #333;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* ヘッダー */
+header {
+  background-color: #87cefa; /* Light Sky Blue */
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 見出し */
+h1, h2, h3 {
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+}
+
+/* ボタン */
+button {
+  background-color: #87cefa;
+  border: none;
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+button:hover {
+  background-color: #00bfff; /* DeepSkyBlue */
+}
+
+/* フォーム要素 */
+input[type="text"],
+input[type="password"],
+input[type="date"],
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+/* リンク */
+a {
+  color: #00bfff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* セクションやフォームの枠 */
+form, .form-container, .card {
+  background-color: #e6f7ff; /* 薄い青 */
+  padding: 1rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+
+/* HR */
+hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 1rem 0;
+}
