@@ -29,6 +29,21 @@
 <body>
   <h1>案件詳細ページ</h1>
   <div id="caseDetails"></div>
+  <button id="editButton" onclick="toggleEditForm()">編集</button>
+  <!-- 編集フォーム（初期は非表示） -->
+  <div id="editForm" style="display:none; border:1px solid #ccc; padding:10px; margin:10px 0;">
+    <h3>案件編集</h3>
+    <label>案件名: <input type="text" id="edit_caseTitle"></label><br>
+    <label>出発地: <input type="text" id="edit_departure"></label><br>
+    <label>帰着地: <input type="text" id="edit_arrival"></label><br>
+    <label>マル契種類: <input type="text" id="edit_contractType"></label><br>
+    <label>金額（予定）: <input type="number" id="edit_estimatedPrice"></label><br>
+    <label>金額（確定）: <input type="number" id="edit_confirmedPrice"></label><br>
+    <label>備考: <textarea id="edit_remarks"></textarea></label><br>
+    <button onclick="saveEdits()">保存</button>
+    <button onclick="toggleEditForm()">キャンセル</button>
+  </div>
+  
   <h3>コメント一覧</h3>
   <div id="commentsList"></div>
   <h3>新しいコメントを投稿</h3>
@@ -48,22 +63,24 @@
       window.location.href = "dashboard.html";
     }
 
+    let currentData = {};
+
     // 案件情報を表示
     function loadCaseDetails() {
       db.collection("companies").doc(companyId).collection("threads").doc(threadId)
         .get()
         .then(doc => {
           if (doc.exists) {
-            const data = doc.data();
+            currentData = doc.data(); // 現在のデータを保存
             const caseDetails = `
-              <h2>${data.caseTitle}</h2>
-              <p>出発地: ${data.departure}</p>
-              <p>帰着地: ${data.arrival}</p>
-              <p>マル契種類: ${data.contractType}</p>
-              <p>金額（予定）: ${data.estimatedPrice}</p>
-              <p>金額（確定）: ${data.confirmedPrice}</p>
-              <p>備考: ${data.remarks}</p>
-              <p>作成日時: ${data.last_updated.toDate().toLocaleString()}</p>
+              <h2>${currentData.caseTitle}</h2>
+              <p>出発地: ${currentData.departure}</p>
+              <p>帰着地: ${currentData.arrival}</p>
+              <p>マル契種類: ${currentData.contractType}</p>
+              <p>金額（予定）: ${currentData.estimatedPrice}</p>
+              <p>金額（確定）: ${currentData.confirmedPrice}</p>
+              <p>備考: ${currentData.remarks}</p>
+              <p>作成日時: ${currentData.last_updated.toDate().toLocaleString()}</p>
             `;
             document.getElementById("caseDetails").innerHTML = caseDetails;
           }
@@ -84,6 +101,69 @@
             const comment = doc.data();
             commentsList.innerHTML += `<p>${comment.name}: ${comment.text} (${comment.timestamp.toDate().toLocaleString()})</p>`;
           });
+        });
+    }
+
+    // 編集フォームの表示切替
+    function toggleEditForm() {
+      const editFormDiv = document.getElementById("editForm");
+      if (editFormDiv.style.display === "none") {
+        // 編集フォームを表示し、現在の値でプレフィルする
+        document.getElementById("edit_caseTitle").value = currentData.caseTitle || "";
+        document.getElementById("edit_departure").value = currentData.departure || "";
+        document.getElementById("edit_arrival").value = currentData.arrival || "";
+        document.getElementById("edit_contractType").value = currentData.contractType || "";
+        document.getElementById("edit_estimatedPrice").value = currentData.estimatedPrice || "";
+        document.getElementById("edit_confirmedPrice").value = currentData.confirmedPrice || "";
+        document.getElementById("edit_remarks").value = currentData.remarks || "";
+        editFormDiv.style.display = "block";
+      } else {
+        editFormDiv.style.display = "none";
+      }
+    }
+
+    // 編集内容を保存
+    function saveEdits() {
+      const newCaseTitle = document.getElementById("edit_caseTitle").value.trim();
+      const newDeparture = document.getElementById("edit_departure").value.trim();
+      const newArrival = document.getElementById("edit_arrival").value.trim();
+      const newContractType = document.getElementById("edit_contractType").value.trim();
+      const newEstimatedPrice = document.getElementById("edit_estimatedPrice").value.trim();
+      const newConfirmedPrice = document.getElementById("edit_confirmedPrice").value.trim();
+      const newRemarks = document.getElementById("edit_remarks").value.trim();
+
+      const updatedData = {
+        caseTitle: newCaseTitle,
+        departure: newDeparture,
+        arrival: newArrival,
+        contractType: newContractType,
+        estimatedPrice: newEstimatedPrice,
+        confirmedPrice: newConfirmedPrice,
+        remarks: newRemarks,
+        last_updated: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      db.collection("companies").doc(companyId).collection("threads").doc(threadId).update(updatedData)
+        .then(() => {
+          alert("案件が更新されました！");
+          toggleEditForm();
+          loadCaseDetails(); // 再読み込みして更新内容を反映
+
+          // 編集内容をコメントとして追加
+          const editCommentText = `編集内容: 案件名: ${newCaseTitle}, 出発地: ${newDeparture}, 帰着地: ${newArrival}, マル契種類: ${newContractType}, 金額（予定）: ${newEstimatedPrice}, 金額（確定）: ${newConfirmedPrice}, 備考: ${newRemarks}`;
+          const editComment = {
+            name: "編集",
+            text: editCommentText,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          return db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments").add(editComment);
+        })
+        .then(() => {
+          console.log("編集コメントを追加しました");
+        })
+        .catch(error => {
+          console.error("Error updating case:", error);
         });
     }
 
