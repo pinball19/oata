@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" type="text/css" href="style.css">
   <meta charset="UTF-8">
   <title>販売店ダッシュボード</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -14,35 +14,37 @@
     emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
 
     // Firebase 初期化（login.htmlと同じ設定を使用）
-      const firebaseConfig = {
-        apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
-        authDomain: "oata-8c05b.firebaseapp.com",
-        projectId: "oata-8c05b",
-        storageBucket: "oata-8c05b.firebasestorage.app",
-        messagingSenderId: "949261471175",
-        appId: "1:949261471175:web:28482b939262d8e93f1de2",
-        measurementId: "G-02LMR8FTNX"
-      };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
+      authDomain: "oata-8c05b.firebaseapp.com",
+      projectId: "oata-8c05b",
+      storageBucket: "oata-8c05b.firebasestorage.app",
+      messagingSenderId: "949261471175",
+      appId: "1:949261471175:web:28482b939262d8e93f1de2",
+      measurementId: "G-02LMR8FTNX"
+    };
     firebase.initializeApp(firebaseConfig);
   </script>
 </head>
 <body>
-  <h1>販売店ダッシュボード</h1>
-  <p id="welcomeMsg"></p>
-  <button onclick="showForm()">＋ 新しい案件を作成</button>
-  
-  <!-- 案件作成フォーム（初期は非表示） -->
-  <div id="newCaseForm" style="display: none; border: 1px solid #ccc; padding: 10px; margin-top:10px;">
-    <h2>案件情報を入力</h2>
-    <label>案件名: <input type="text" id="caseTitle"></label><br>
-    <label>質問内容: <textarea id="caseQuestion"></textarea></label><br>
-    <label>希望納期: <input type="date" id="caseDeadline"></label><br>
-    <button onclick="createNewCase()">保存</button>
-  </div>
+  <div class="container">
+    <h1>販売店ダッシュボード</h1>
+    <p id="welcomeMsg"></p>
+    <button onclick="showForm()">＋ 新しい案件を作成</button>
+    
+    <!-- 案件作成フォーム（初期は非表示） -->
+    <div id="newCaseForm" style="display: none;">
+      <h2>案件情報を入力</h2>
+      <label>案件名: <input type="text" id="caseTitle"></label><br>
+      <label>質問内容: <textarea id="caseQuestion"></textarea></label><br>
+      <label>希望納期: <input type="date" id="caseDeadline"></label><br>
+      <button onclick="createNewCase()">保存</button>
+    </div>
 
-  <h3>過去半年の案件</h3>
-  <div id="caseList"></div>
-  <button onclick="downloadCSV()">CSV ダウンロード</button>
+    <h3>過去半年の案件</h3>
+    <div id="caseList"></div>
+    <button onclick="downloadCSV()">CSV ダウンロード</button>
+  </div>
 
   <script>
     const db = firebase.firestore();
@@ -107,13 +109,14 @@
             const caseData = doc.data();
             const caseId = doc.id;
             let updatedDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
+            // 各案件全体を .project-card で囲む
             let div = document.createElement("div");
+            div.className = "project-card";
             div.innerHTML = `
               <h3>${caseData.caseTitle} - ${caseData.caseDeadline}</h3>
               <p>${caseData.caseQuestion}</p>
               <p>更新日時: ${updatedDate}</p>
               <a href="thread.html?company=${companyId}&thread=${caseId}">詳細を見る</a>
-              <hr>
             `;
             caseListDiv.appendChild(div);
           });
