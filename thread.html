@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>案件詳細ページ</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- EmailJS -->
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    // EmailJS 初期化
+    emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
+
+    // Firebase 初期化
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <h1>案件詳細ページ</h1>
+  <div id="caseDetails"></div>
+  <h3>コメント一覧</h3>
+  <div id="commentsList"></div>
+  <h3>新しいコメントを投稿</h3>
+  <textarea id="newComment" placeholder="コメントを入力"></textarea><br>
+  <button onclick="submitComment()">コメントを投稿</button>
+
+  <script>
+    const db = firebase.firestore();
+
+    // URLのクエリパラメータから販売店IDと案件IDを取得
+    const params = new URLSearchParams(window.location.search);
+    const companyId = params.get("company");
+    const threadId = params.get("thread");
+
+    if (!companyId || !threadId) {
+      alert("無効なURLです。ダッシュボードに戻ります。");
+      window.location.href = "dashboard.html";
+    }
+
+    // 案件情報を表示
+    function loadCaseDetails() {
+      db.collection("companies").doc(companyId).collection("threads").doc(threadId)
+        .get()
+        .then(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            const caseDetails = `
+              <h2>${data.caseTitle}</h2>
+              <p>質問内容: ${data.caseQuestion}</p>
+              <p>希望納期: ${data.caseDeadline}</p>
+              <p>作成日時: ${data.last_updated.toDate().toLocaleString()}</p>
+            `;
+            document.getElementById("caseDetails").innerHTML = caseDetails;
+          }
+        });
+    }
+
+    // コメント一覧を表示
+    function loadComments() {
+      db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments")
+        .orderBy("timestamp", "asc")
+        .onSnapshot(snapshot => {
+          const commentsList = document.getElementById("commentsList");
+          commentsList.innerHTML = "";
+          snapshot.forEach(doc => {
+            const comment = doc.data();
+            commentsList.innerHTML += `<p>${comment.name}: ${comment.text} (${comment.timestamp.toDate().toLocaleString()})</p>`;
+          });
+        });
+    }
+
+    // コメントを投稿
+    function submitComment() {
+      const newComment = document.getElementById("newComment").value;
+      if (!newComment) {
+        alert("コメントを入力してください。");
+        return;
+      }
+
+      const commentData = {
+        name: "販売店担当者", // 固定またはログイン情報から取得
+        text: newComment,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments")
+        .add(commentData)
+        .then(() => {
+          document.getElementById("newComment").value = "";
+          alert("コメントを投稿しました！");
+          // EmailJSで通知
+          sendEmailNotification(newComment);
+        });
+    }
+
+    // コメント投稿時の通知
+    function sendEmailNotification(comment) {
+      emailjs.send("YOUR_EMAILJS_SERVICE_ID", "YOUR_EMAILJS_TEMPLATE_ID", {
+        to_email: "notify@example.com",
+        message: `新しいコメントが投稿されました: ${comment}`
+      })
+      .then(response => console.log("メール通知成功:", response))
+      .catch(error => console.error("メール送信エラー:", error));
+    }
+
+    // 初期化
+    loadCaseDetails();
+    loadComments();
+  </script>
+</body>
+</html>
