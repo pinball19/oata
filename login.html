@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>販売店ログイン</title>
+  <!-- Firebase SDK（互換モード） -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- EmailJS（通知機能用） -->
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    // EmailJS 初期化（YOUR_EMAILJS_PUBLIC_KEY をご自身のものに置換）
+    emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
+
+    // Firebase 初期化（以下はあなたのFirebaseプロジェクトの設定に置換してください）
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <h2>販売店ログイン</h2>
+  <input type="text" id="companyID" placeholder="販売店ID">
+  <input type="password" id="password" placeholder="パスワード">
+  <button onclick="login()">ログイン</button>
+
+  <script>
+    const db = firebase.firestore();
+
+    function login() {
+      const companyID = document.getElementById("companyID").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!companyID || !password) {
+        alert("販売店IDとパスワードを入力してください");
+        return;
+      }
+
+      // Firestore の companies コレクションから該当ドキュメントを取得
+      db.collection("companies").doc(companyID).get()
+        .then(doc => {
+          if (!doc.exists) {
+            alert("販売店IDが存在しません");
+            return;
+          }
+          const data = doc.data();
+          // ※ 本来はハッシュ化されたパスワードを検証すべきです
+          if (data.password !== password) {
+            alert("パスワードが間違っています");
+            return;
+          }
+          // ログイン成功：company_idをlocalStorageに保存して、ダッシュボードへリダイレクト
+          localStorage.setItem("company_id", companyID);
+          window.location.href = "dashboard.html?company=" + companyID;
+        })
+        .catch(error => {
+          console.error("Error fetching company data:", error);
+        });
+    }
+  </script>
+</body>
+</html>
