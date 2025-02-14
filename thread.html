@@ -27,6 +27,9 @@
   </script>
 </head>
 <body>
+  <!-- 販売店ダッシュボードへ戻るボタン -->
+  <button onclick="goToDashboard()" style="margin-bottom: 20px;">販売店ダッシュボード</button>
+
   <h1>案件詳細ページ</h1>
   <div id="caseDetailsContainer">
     <div id="caseDetails"></div>
@@ -51,12 +54,10 @@
       window.location.href = "dashboard.html";
     }
 
-    // 現在表示中の案件情報を保持する変数
     let currentData = {};
-    // 編集モードかどうかのフラグ
     let editing = false;
 
-    // 案件情報を表示（非編集モード）
+    // 案件情報を表示
     function loadCaseDetails() {
       db.collection("companies").doc(companyId).collection("threads").doc(threadId)
         .get()
@@ -71,7 +72,6 @@
         });
     }
 
-    // 非編集状態で案件情報をレンダリング
     function renderCaseDetails() {
       const detailsDiv = document.getElementById("caseDetails");
       detailsDiv.innerHTML = `
@@ -88,11 +88,10 @@
       `;
     }
 
-    // 編集モードに切替：インライン入力フォームに置換
+    // 編集モードの切り替え
     function toggleEditMode() {
       const detailsDiv = document.getElementById("caseDetails");
       if (!editing) {
-        // 編集モード開始：現在の表示を入力フォームに変更
         detailsDiv.innerHTML = `
           <h2><input type="text" id="edit_caseTitle" value="${currentData.caseTitle}"></h2>
           <p>出発地: <input type="text" id="edit_departure" value="${currentData.departure}"></p>
@@ -104,25 +103,23 @@
           <p>金額（確定）: <input type="number" id="edit_confirmedPrice" value="${currentData.confirmedPrice || ''}"></p>
           <p>備考: <textarea id="edit_remarks">${currentData.remarks || ''}</textarea></p>
           <button onclick="saveEdits()">保存</button>
-          <button onclick="cancelEdits()">キャンセル</button>
+          <button onclick="toggleEditMode()">キャンセル</button>
         `;
         editing = true;
       } else {
-        // すでに編集モードの場合はキャンセルして再表示
         renderCaseDetails();
         editing = false;
       }
     }
 
-    // 編集キャンセル時
+    // 編集キャンセル用
     function cancelEdits() {
       renderCaseDetails();
       editing = false;
     }
 
-    // 編集内容を保存
+    // 編集内容の保存
     function saveEdits() {
-      // 新しい値を取得
       const newCaseTitle = document.getElementById("edit_caseTitle").value.trim();
       const newDeparture = document.getElementById("edit_departure").value.trim();
       const newDepartureDate = document.getElementById("edit_departureDate").value;
@@ -146,7 +143,7 @@
         last_updated: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      // 更新する項目のみ抽出（編集前と比較）
+      // 変更された項目のみ抽出
       let changes = [];
       if (newCaseTitle !== currentData.caseTitle) changes.push(`案件名: ${newCaseTitle}`);
       if (newDeparture !== currentData.departure) changes.push(`出発地: ${newDeparture}`);
@@ -162,10 +159,8 @@
         .then(() => {
           alert("案件が更新されました！");
           editing = false;
-          // 更新後、再読み込みして最新情報を表示
           loadCaseDetails();
-
-          // 変更があった場合、編集された項目のみを編集履歴としてコメントに追加
+          // 編集された項目のみを編集履歴としてコメントに追加
           if (changes.length > 0) {
             const editCommentText = "編集内容: " + changes.join(", ");
             const editComment = {
@@ -232,6 +227,11 @@
       })
       .then(response => console.log("メール通知成功:", response))
       .catch(error => console.error("メール送信エラー:", error));
+    }
+
+    // 販売店ダッシュボードへ戻るボタンの処理
+    function goToDashboard() {
+      window.location.href = "dashboard.html?company=" + companyId;
     }
 
     // 初期化
