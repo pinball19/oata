@@ -45,6 +45,7 @@
       <label>金額（確定）: <input type="number" id="confirmedPrice"></label><br>
       <label>備考: <textarea id="remarks"></textarea></label><br>
       <button onclick="createNewCase()">保存</button>
+      <button onclick="cancelNewCase()">キャンセル</button>
     </div>
 
     <h3>過去半年の案件</h3>
@@ -62,10 +63,26 @@
     }
     document.getElementById("welcomeMsg").innerText = "ようこそ、" + companyId + " 様";
 
+    // フォーム表示
     function showForm() {
       document.getElementById("newCaseForm").style.display = "block";
     }
 
+    // キャンセルボタン用の処理：フォームを非表示にして入力欄をクリア
+    function cancelNewCase() {
+      document.getElementById("newCaseForm").style.display = "none";
+      document.getElementById("caseTitle").value = "";
+      document.getElementById("departure").value = "";
+      document.getElementById("departureDate").value = "";
+      document.getElementById("arrival").value = "";
+      document.getElementById("arrivalDate").value = "";
+      document.getElementById("contractType").value = "";
+      document.getElementById("estimatedPrice").value = "";
+      document.getElementById("confirmedPrice").value = "";
+      document.getElementById("remarks").value = "";
+    }
+
+    // 新しい案件作成：フォームの内容をFirestoreに保存
     function createNewCase() {
       const caseTitle = document.getElementById("caseTitle").value.trim();
       const departure = document.getElementById("departure").value.trim();
@@ -96,22 +113,14 @@
       })
       .then(() => {
         alert("案件が作成されました！");
-        document.getElementById("newCaseForm").style.display = "none";
-        document.getElementById("caseTitle").value = "";
-        document.getElementById("departure").value = "";
-        document.getElementById("departureDate").value = "";
-        document.getElementById("arrival").value = "";
-        document.getElementById("arrivalDate").value = "";
-        document.getElementById("contractType").value = "";
-        document.getElementById("estimatedPrice").value = "";
-        document.getElementById("confirmedPrice").value = "";
-        document.getElementById("remarks").value = "";
+        cancelNewCase();
       })
       .catch(error => {
         console.error("Error creating new case:", error);
       });
     }
 
+    // 案件一覧表示（過去半年分の案件）
     function loadCases() {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -150,34 +159,39 @@
     }
     loadCases();
 
+    // CSVダウンロード機能
     async function downloadCSV() {
-      const snapshot = await db.collection("companies").doc(companyId).collection("threads")
-        .orderBy("last_updated", "desc")
-        .get();
+      try {
+        const snapshot = await db.collection("companies").doc(companyId).collection("threads")
+          .orderBy("last_updated", "desc")
+          .get();
 
-      let csvContent = "data:text/csv;charset=utf-8,案件名,出発地,出発日,帰着地,帰着日,マル契種類,金額（予定）,金額（確定）,備考,作成日\n";
-      snapshot.forEach(doc => {
-        const caseData = doc.data();
-        const createdDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
-        const title = caseData.caseTitle.replace(/"/g, '""');
-        const departure = caseData.departure.replace(/"/g, '""');
-        const departureDate = caseData.departureDate;
-        const arrival = caseData.arrival.replace(/"/g, '""');
-        const arrivalDate = caseData.arrivalDate;
-        const contractType = caseData.contractType.replace(/"/g, '""');
-        const estimatedPrice = caseData.estimatedPrice;
-        const confirmedPrice = caseData.confirmedPrice;
-        const remarks = (caseData.remarks || "").replace(/"/g, '""');
-        csvContent += `"${title}","${departure}","${departureDate}","${arrival}","${arrivalDate}","${contractType}","${estimatedPrice}","${confirmedPrice}","${remarks}","${createdDate}"\n`;
-      });
+        let csvContent = "data:text/csv;charset=utf-8,案件名,出発地,出発日,帰着地,帰着日,マル契種類,金額（予定）,金額（確定）,備考,作成日\n";
+        snapshot.forEach(doc => {
+          const caseData = doc.data();
+          const createdDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
+          const title = caseData.caseTitle.replace(/"/g, '""');
+          const departure = caseData.departure.replace(/"/g, '""');
+          const departureDate = caseData.departureDate;
+          const arrival = caseData.arrival.replace(/"/g, '""');
+          const arrivalDate = caseData.arrivalDate;
+          const contractType = caseData.contractType.replace(/"/g, '""');
+          const estimatedPrice = caseData.estimatedPrice;
+          const confirmedPrice = caseData.confirmedPrice;
+          const remarks = (caseData.remarks || "").replace(/"/g, '""');
+          csvContent += `"${title}","${departure}","${departureDate}","${arrival}","${arrivalDate}","${contractType}","${estimatedPrice}","${confirmedPrice}","${remarks}","${createdDate}"\n`;
+        });
 
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `案件リスト_${companyId}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `案件リスト_${companyId}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error("Error downloading CSV:", error);
+      }
     }
   </script>
 </body>
