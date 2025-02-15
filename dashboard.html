@@ -7,10 +7,31 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <!-- ★ 画像アップロードに必要なFirebase Storageの追加スクリプト -->
+  <!-- 画像アップロードに必要なFirebase Storage -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <!-- EmailJS -->
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+  <!-- ★ スピナーの簡易CSSアニメーションを定義 -->
+  <style>
+    /* スピナー本体 */
+    #spinner {
+      border: 8px solid #f3f3f3; /* 薄いグレー */
+      border-top: 8px solid #3498db; /* 青 */
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    /* スピンするアニメーション */
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
   <script>
     // EmailJS 初期化（YOUR_EMAILJS_PUBLIC_KEY をご自身のものに置換）
     emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
@@ -20,7 +41,7 @@
       apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
       authDomain: "oata-8c05b.firebaseapp.com",
       projectId: "oata-8c05b",
-      // ★ バケット名は必ずご自身のものに合わせてください（たとえば "oata-8c05b.appspot.com" など）
+      // ★ 実際のバケット名に合わせてください（例: "oata-8c05b.appspot.com"）
       storageBucket: "oata-8c05b.firebasestorage.app",
       messagingSenderId: "949261471175",
       appId: "1:949261471175:web:28482b939262d8e93f1de2",
@@ -48,8 +69,11 @@
       <label>金額（確定）: <input type="number" id="confirmedPrice"></label><br>
       <label>備考: <textarea id="remarks"></textarea></label><br>
 
-      <!-- ★ 画像入力フィールドを追加 -->
+      <!-- 画像添付欄 -->
       <label>画像添付: <input type="file" id="caseImage" accept="image/*"></label><br>
+
+      <!-- ★ スピナーを配置（初期は display: none）-->
+      <div id="spinner" style="display: none;"></div>
 
       <button onclick="createNewCase()">保存</button>
       <button onclick="cancelNewCase()">キャンセル</button>
@@ -62,7 +86,7 @@
 
   <script>
     const db = firebase.firestore();
-    const storage = firebase.storage(); // ★ Storageの参照を使えるように
+    const storage = firebase.storage();
     const urlParams = new URLSearchParams(window.location.search);
     let companyId = urlParams.get("company") || localStorage.getItem("company_id");
     if (!companyId) {
@@ -76,7 +100,7 @@
       document.getElementById("newCaseForm").style.display = "block";
     }
 
-    // キャンセルボタン用の処理：フォームを非表示にして入力欄をクリア
+    // キャンセルボタン用：フォームを非表示＆入力欄リセット
     function cancelNewCase() {
       document.getElementById("newCaseForm").style.display = "none";
       document.getElementById("caseTitle").value = "";
@@ -88,12 +112,17 @@
       document.getElementById("estimatedPrice").value = "";
       document.getElementById("confirmedPrice").value = "";
       document.getElementById("remarks").value = "";
-      // 画像もクリア
       document.getElementById("caseImage").value = "";
+      // スピナー非表示
+      document.getElementById("spinner").style.display = "none";
     }
 
-    // ★ 新しい案件作成：フォームの内容をFirestoreに保存 + 画像アップロード
+    // 新しい案件作成：画像アップロード + Firestore登録
     async function createNewCase() {
+      // スピナー表示
+      const spinner = document.getElementById("spinner");
+      spinner.style.display = "block";
+
       try {
         const caseTitle = document.getElementById("caseTitle").value.trim();
         const departure = document.getElementById("departure").value.trim();
@@ -104,34 +133,28 @@
         const estimatedPrice = document.getElementById("estimatedPrice").value.trim();
         const confirmedPrice = document.getElementById("confirmedPrice").value.trim();
         const remarks = document.getElementById("remarks").value.trim();
-
-        // ★ 画像ファイル取得
         const caseImageFile = document.getElementById("caseImage").files[0];
 
-        // 必須チェック
+        // 必須項目チェック
         if (!caseTitle || !departure || !arrival || !contractType) {
           alert("案件名、出発地、帰着地、マル契種類は必須項目です");
           return;
         }
 
-        // 画像アップロード（ファイルがある場合のみ）
         let imageUrl = "";
         if (caseImageFile) {
-          // ファイル名から拡張子を取得
           const extension = caseImageFile.name.split('.').pop();
-          // アップロード先のパス
-          // 例：threads/{現在時刻}_{ファイル名} や  threads/newCaseImage.png などお好みでOK
           const filePath = `threads/${Date.now()}_caseImage.${extension}`;
-
-          // Storageリファレンスを作りアップロード
           const storageRef = storage.ref().child(filePath);
+
+          // 画像アップロード (重い画像だと多少時間がかかる)
           const snapshot = await storageRef.put(caseImageFile);
 
-          // ダウンロードURLを取得
+          // ダウンロードURL取得
           imageUrl = await snapshot.ref.getDownloadURL();
         }
 
-        // Firestoreにドキュメントを作成
+        // Firestoreに追加
         await db.collection("companies").doc(companyId).collection("threads").add({
           caseTitle: caseTitle,
           departure: departure,
@@ -142,19 +165,22 @@
           estimatedPrice: estimatedPrice,
           confirmedPrice: confirmedPrice,
           remarks: remarks,
-          imageUrl: imageUrl, // ★ 画像のURLを保存
+          imageUrl: imageUrl,
           last_updated: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         alert("案件が作成されました！");
-        cancelNewCase(); // フォームを閉じてリセット
+        cancelNewCase(); // フォームリセット
       } catch (error) {
         console.error("Error creating new case:", error);
         alert("案件作成中にエラーが発生しました。");
+      } finally {
+        // スピナーを非表示に
+        spinner.style.display = "none";
       }
     }
 
-    // 案件一覧表示（過去半年分の案件）
+    // 過去半年の案件をリアルタイム表示
     function loadCases() {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -171,10 +197,11 @@
           snapshot.forEach(doc => {
             const caseData = doc.data();
             const caseId = doc.id;
-            let updatedDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
+            let updatedDate = caseData.last_updated
+              ? caseData.last_updated.toDate().toLocaleString()
+              : "";
             let div = document.createElement("div");
             div.className = "project-card";
-            // 案件名のみヘッダーとして表示し、その他の詳細は下部に表示
             div.innerHTML = `
               <h3>${caseData.caseTitle}</h3>
               <p>出発地: ${caseData.departure}</p>
@@ -185,7 +212,6 @@
               <p>金額（確定）: ${caseData.confirmedPrice || "-"}</p>
               <p>備考: ${caseData.remarks || "-"}</p>
               <p>更新日時: ${updatedDate}</p>
-              <!-- 画像があれば小さく表示 -->
               ${
                 caseData.imageUrl
                   ? `<div><img src="${caseData.imageUrl}" alt="画像" style="max-width: 200px; max-height: 200px;"></div>`
@@ -199,7 +225,7 @@
     }
     loadCases();
 
-    // CSVダウンロード機能
+    // CSV ダウンロード機能
     async function downloadCSV() {
       try {
         const snapshot = await db.collection("companies").doc(companyId).collection("threads")
@@ -209,7 +235,9 @@
         let csvContent = "data:text/csv;charset=utf-8,案件名,出発地,出発日,帰着地,帰着日,マル契種類,金額（予定）,金額（確定）,備考,作成日\n";
         snapshot.forEach(doc => {
           const caseData = doc.data();
-          const createdDate = caseData.last_updated ? caseData.last_updated.toDate().toLocaleString() : "";
+          const createdDate = caseData.last_updated
+            ? caseData.last_updated.toDate().toLocaleString()
+            : "";
           const title = (caseData.caseTitle || "").replace(/"/g, '""');
           const departure = (caseData.departure || "").replace(/"/g, '""');
           const departureDate = caseData.departureDate || "";
