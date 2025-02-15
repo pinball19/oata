@@ -7,10 +7,30 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <!-- ★ 画像アップロードに必要なFirebase Storageを追加 -->
+  <!-- 画像アップロードに必要なFirebase Storageを追加 -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <!-- EmailJS -->
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+  <!-- ★ スピナー用の簡易CSS（お好みで調整可能） -->
+  <style>
+    /* スピナー本体 */
+    #spinner {
+      display: none;               /* 初期は非表示 */
+      border: 8px solid #f3f3f3;   /* 薄いグレー */
+      border-top: 8px solid #3498db; /* 青 */
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 20px;
+    }
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
   <script>
     // EmailJS 初期化
     emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
@@ -20,7 +40,7 @@
       apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
       authDomain: "oata-8c05b.firebaseapp.com",
       projectId: "oata-8c05b",
-      storageBucket: "oata-8c05b.firebasestorage.app",  // ← storageBucket名は適切に合わせてください
+      storageBucket: "oata-8c05b.firebasestorage.app",  // ← 必要に応じてご自身のStorageバケット名に合わせてください
       messagingSenderId: "949261471175",
       appId: "1:949261471175:web:28482b939262d8e93f1de2",
       measurementId: "G-02LMR8FTNX"
@@ -33,6 +53,9 @@
   <button onclick="goToDashboard()" style="margin-bottom: 20px;">販売店ダッシュボード</button>
 
   <h1>案件詳細ページ</h1>
+  <!-- ★ スピナーを画面上に配置 -->
+  <div id="spinner"></div>
+
   <div id="caseDetailsContainer">
     <div id="caseDetails"></div>
     <button id="editButton" onclick="toggleEditMode()">編集</button>
@@ -47,7 +70,7 @@
 
   <script>
     const db = firebase.firestore();
-    const storage = firebase.storage();  // ★ 追加：Storageの参照
+    const storage = firebase.storage();
     const params = new URLSearchParams(window.location.search);
     const companyId = params.get("company");
     const threadId = params.get("thread");
@@ -91,7 +114,7 @@
         <p>作成日時: ${currentData.last_updated ? currentData.last_updated.toDate().toLocaleString() : "-"}</p>
       `;
 
-      // ★ 画像があれば表示
+      // 画像があれば表示
       if (currentData.imageUrl) {
         html += `
           <div>
@@ -120,7 +143,7 @@
           <p>金額（確定）: <input type="number" id="edit_confirmedPrice" value="${currentData.confirmedPrice || ''}"></p>
           <p>備考: <textarea id="edit_remarks">${currentData.remarks || ''}</textarea></p>
 
-          <!-- ★ 画像アップロード用のinputを追加 -->
+          <!-- 画像アップロード用のinputを追加 -->
           <p>添付画像（1枚のみ）: <input type="file" id="imageUpload" accept="image/*"></p>
 
           <button onclick="saveEdits()">保存</button>
@@ -136,6 +159,9 @@
 
     // 編集内容の保存
     function saveEdits() {
+      // ★ 保存前にスピナーを表示
+      document.getElementById("spinner").style.display = "block";
+
       // 既存項目の取得
       const newCaseTitle = document.getElementById("edit_caseTitle").value.trim();
       const newDeparture = document.getElementById("edit_departure").value.trim();
@@ -178,41 +204,56 @@
       const file = fileInput ? fileInput.files[0] : null;
 
       if (file) {
-        // ファイルの拡張子を取得
         const extension = file.name.split('.').pop();
         // Storageのパス(例: cases/{threadId}/caseImage.{拡張子})
         const storageRef = storage.ref().child(`cases/${threadId}/caseImage.${extension}`);
 
         // Firebase Storageにアップロード
-        const uploadTask = storageRef.put(file);
-        uploadTask.then(snapshot => {
-          // アップロード完了後にダウンロードURLを取得
-          return snapshot.ref.getDownloadURL();
-        })
-        .then(downloadURL => {
-          updatedData.imageUrl = downloadURL; // Firestoreに保存するURL
-          changes.push(`画像変更: ${downloadURL}`); // 変更リストに追加
-          // Firestoreの更新処理を呼ぶ
-          return updateFirestoreData(updatedData, changes);
-        })
-        .catch(error => {
-          console.error("Error uploading image:", error);
-          alert("画像アップロード中にエラーが発生しました。");
-        });
+        storageRef.put(file)
+          .then(snapshot => snapshot.ref.getDownloadURL())
+          .then(downloadURL => {
+            updatedData.imageUrl = downloadURL; // Firestoreに保存するURL
+            changes.push(`画像変更: ${downloadURL}`);
+            // Firestore更新
+            return updateFirestoreData(updatedData, changes);
+          })
+          .then(() => {
+            alert("案件が更新されました！");
+            editing = false;
+            loadCaseDetails();
+            // スピナー非表示
+            document.getElementById("spinner").style.display = "none";
+          })
+          .catch(error => {
+            console.error("Error uploading image or updating case:", error);
+            alert("画像アップロードまたは更新中にエラーが発生しました。");
+            // スピナー非表示
+            document.getElementById("spinner").style.display = "none";
+          });
       } else {
-        // 画像未指定の場合はそのままFirestoreを更新
-        updateFirestoreData(updatedData, changes);
+        // 画像未指定の場合
+        updateFirestoreData(updatedData, changes)
+          .then(() => {
+            alert("案件が更新されました！");
+            editing = false;
+            loadCaseDetails();
+          })
+          .catch(error => {
+            console.error("Error updating case:", error);
+            alert("案件更新中にエラーが発生しました。");
+          })
+          .finally(() => {
+            // スピナー非表示
+            document.getElementById("spinner").style.display = "none";
+          });
       }
     }
 
-    // Firestoreの更新処理(画像アップロード有無に関わらず共通化)
+    // Firestoreの更新処理(画像有無に関わらず共通で利用)
     function updateFirestoreData(updatedData, changes) {
       return db.collection("companies").doc(companyId).collection("threads").doc(threadId).update(updatedData)
         .then(() => {
-          alert("案件が更新されました！");
-          editing = false;
-          loadCaseDetails();
-          // 編集コメントを追加(変更された項目のみ)
+          // 編集された項目のみコメントに追加
           if (changes.length > 0) {
             const editCommentText = "編集内容: " + changes.join(", ");
             const editComment = {
@@ -220,14 +261,12 @@
               text: editCommentText,
               timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
-            return db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments").add(editComment);
+            return db.collection("companies").doc(companyId).collection("threads").doc(threadId)
+                     .collection("comments").add(editComment);
           }
         })
         .then(() => {
           console.log("編集コメントを追加しました");
-        })
-        .catch(error => {
-          console.error("Error updating case:", error);
         });
     }
 
@@ -240,7 +279,10 @@
           commentsList.innerHTML = "";
           snapshot.forEach(doc => {
             const comment = doc.data();
-            commentsList.innerHTML += `<p>${comment.name}: ${comment.text} (${comment.timestamp ? comment.timestamp.toDate().toLocaleString() : '-'})</p>`;
+            const timestamp = comment.timestamp
+              ? comment.timestamp.toDate().toLocaleString()
+              : "-";
+            commentsList.innerHTML += `<p>${comment.name}: ${comment.text} (${timestamp})</p>`;
           });
         });
     }
@@ -281,7 +323,7 @@
       .catch(error => console.error("メール送信エラー:", error));
     }
 
-    // 販売店ダッシュボードへ戻るボタンの処理
+    // 販売店ダッシュボードへ戻るボタン
     function goToDashboard() {
       window.location.href = "dashboard.html?company=" + companyId;
     }
