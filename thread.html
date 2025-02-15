@@ -7,6 +7,8 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- ★ 画像アップロードに必要なFirebase Storageを追加 -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <!-- EmailJS -->
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <script>
@@ -18,7 +20,7 @@
       apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
       authDomain: "oata-8c05b.firebaseapp.com",
       projectId: "oata-8c05b",
-      storageBucket: "oata-8c05b.firebasestorage.app",
+      storageBucket: "oata-8c05b.firebasestorage.app",  // ← storageBucket名は適切に合わせてください
       messagingSenderId: "949261471175",
       appId: "1:949261471175:web:28482b939262d8e93f1de2",
       measurementId: "G-02LMR8FTNX"
@@ -45,6 +47,7 @@
 
   <script>
     const db = firebase.firestore();
+    const storage = firebase.storage();  // ★ 追加：Storageの参照
     const params = new URLSearchParams(window.location.search);
     const companyId = params.get("company");
     const threadId = params.get("thread");
@@ -74,7 +77,8 @@
 
     function renderCaseDetails() {
       const detailsDiv = document.getElementById("caseDetails");
-      detailsDiv.innerHTML = `
+      // 案件データをHTMLに反映
+      let html = `
         <h2>${currentData.caseTitle}</h2>
         <p>出発地: ${currentData.departure}</p>
         <p>出発日: ${currentData.departureDate || "-"}</p>
@@ -84,42 +88,55 @@
         <p>金額（予定）: ${currentData.estimatedPrice || "-"}</p>
         <p>金額（確定）: ${currentData.confirmedPrice || "-"}</p>
         <p>備考: ${currentData.remarks || "-"}</p>
-        <p>作成日時: ${currentData.last_updated.toDate().toLocaleString()}</p>
+        <p>作成日時: ${currentData.last_updated ? currentData.last_updated.toDate().toLocaleString() : "-"}</p>
       `;
+
+      // ★ 画像があれば表示
+      if (currentData.imageUrl) {
+        html += `
+          <div>
+            <p>添付画像:</p>
+            <img src="${currentData.imageUrl}" alt="添付画像" style="max-width: 200px; max-height: 200px;">
+          </div>
+        `;
+      }
+
+      detailsDiv.innerHTML = html;
     }
 
     // 編集モードの切り替え
     function toggleEditMode() {
       const detailsDiv = document.getElementById("caseDetails");
       if (!editing) {
+        // 編集フォーム表示
         detailsDiv.innerHTML = `
-          <h2><input type="text" id="edit_caseTitle" value="${currentData.caseTitle}"></h2>
-          <p>出発地: <input type="text" id="edit_departure" value="${currentData.departure}"></p>
+          <h2><input type="text" id="edit_caseTitle" value="${currentData.caseTitle || ''}"></h2>
+          <p>出発地: <input type="text" id="edit_departure" value="${currentData.departure || ''}"></p>
           <p>出発日: <input type="date" id="edit_departureDate" value="${currentData.departureDate || ''}"></p>
-          <p>帰着地: <input type="text" id="edit_arrival" value="${currentData.arrival}"></p>
+          <p>帰着地: <input type="text" id="edit_arrival" value="${currentData.arrival || ''}"></p>
           <p>帰着日: <input type="date" id="edit_arrivalDate" value="${currentData.arrivalDate || ''}"></p>
-          <p>マル契種類: <input type="text" id="edit_contractType" value="${currentData.contractType}"></p>
+          <p>マル契種類: <input type="text" id="edit_contractType" value="${currentData.contractType || ''}"></p>
           <p>金額（予定）: <input type="number" id="edit_estimatedPrice" value="${currentData.estimatedPrice || ''}"></p>
           <p>金額（確定）: <input type="number" id="edit_confirmedPrice" value="${currentData.confirmedPrice || ''}"></p>
           <p>備考: <textarea id="edit_remarks">${currentData.remarks || ''}</textarea></p>
+
+          <!-- ★ 画像アップロード用のinputを追加 -->
+          <p>添付画像（1枚のみ）: <input type="file" id="imageUpload" accept="image/*"></p>
+
           <button onclick="saveEdits()">保存</button>
           <button onclick="toggleEditMode()">キャンセル</button>
         `;
         editing = true;
       } else {
+        // キャンセルして元の表示に戻す
         renderCaseDetails();
         editing = false;
       }
     }
 
-    // 編集キャンセル用
-    function cancelEdits() {
-      renderCaseDetails();
-      editing = false;
-    }
-
     // 編集内容の保存
     function saveEdits() {
+      // 既存項目の取得
       const newCaseTitle = document.getElementById("edit_caseTitle").value.trim();
       const newDeparture = document.getElementById("edit_departure").value.trim();
       const newDepartureDate = document.getElementById("edit_departureDate").value;
@@ -130,6 +147,7 @@
       const newConfirmedPrice = document.getElementById("edit_confirmedPrice").value.trim();
       const newRemarks = document.getElementById("edit_remarks").value.trim();
 
+      // 更新データオブジェクト
       const updatedData = {
         caseTitle: newCaseTitle,
         departure: newDeparture,
@@ -143,7 +161,7 @@
         last_updated: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      // 変更された項目のみ抽出
+      // 変更された項目リスト（編集コメント用）
       let changes = [];
       if (newCaseTitle !== currentData.caseTitle) changes.push(`案件名: ${newCaseTitle}`);
       if (newDeparture !== currentData.departure) changes.push(`出発地: ${newDeparture}`);
@@ -155,12 +173,46 @@
       if (newConfirmedPrice !== currentData.confirmedPrice) changes.push(`金額（確定）: ${newConfirmedPrice}`);
       if (newRemarks !== currentData.remarks) changes.push(`備考: ${newRemarks}`);
 
-      db.collection("companies").doc(companyId).collection("threads").doc(threadId).update(updatedData)
+      // 画像がアップロードされた場合のみStorageにアップロード
+      const fileInput = document.getElementById("imageUpload");
+      const file = fileInput ? fileInput.files[0] : null;
+
+      if (file) {
+        // ファイルの拡張子を取得
+        const extension = file.name.split('.').pop();
+        // Storageのパス(例: cases/{threadId}/caseImage.{拡張子})
+        const storageRef = storage.ref().child(`cases/${threadId}/caseImage.${extension}`);
+
+        // Firebase Storageにアップロード
+        const uploadTask = storageRef.put(file);
+        uploadTask.then(snapshot => {
+          // アップロード完了後にダウンロードURLを取得
+          return snapshot.ref.getDownloadURL();
+        })
+        .then(downloadURL => {
+          updatedData.imageUrl = downloadURL; // Firestoreに保存するURL
+          changes.push(`画像変更: ${downloadURL}`); // 変更リストに追加
+          // Firestoreの更新処理を呼ぶ
+          return updateFirestoreData(updatedData, changes);
+        })
+        .catch(error => {
+          console.error("Error uploading image:", error);
+          alert("画像アップロード中にエラーが発生しました。");
+        });
+      } else {
+        // 画像未指定の場合はそのままFirestoreを更新
+        updateFirestoreData(updatedData, changes);
+      }
+    }
+
+    // Firestoreの更新処理(画像アップロード有無に関わらず共通化)
+    function updateFirestoreData(updatedData, changes) {
+      return db.collection("companies").doc(companyId).collection("threads").doc(threadId).update(updatedData)
         .then(() => {
           alert("案件が更新されました！");
           editing = false;
           loadCaseDetails();
-          // 編集された項目のみを編集履歴としてコメントに追加
+          // 編集コメントを追加(変更された項目のみ)
           if (changes.length > 0) {
             const editCommentText = "編集内容: " + changes.join(", ");
             const editComment = {
@@ -188,7 +240,7 @@
           commentsList.innerHTML = "";
           snapshot.forEach(doc => {
             const comment = doc.data();
-            commentsList.innerHTML += `<p>${comment.name}: ${comment.text} (${comment.timestamp.toDate().toLocaleString()})</p>`;
+            commentsList.innerHTML += `<p>${comment.name}: ${comment.text} (${comment.timestamp ? comment.timestamp.toDate().toLocaleString() : '-'})</p>`;
           });
         });
     }
