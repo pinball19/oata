@@ -7,13 +7,14 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <!-- EmailJS -->
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <script>
     // EmailJS 初期化
     emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
 
-    // Firebase 初期化
+    // Firebase 初期化（各自の設定に置換）
     const firebaseConfig = {
       apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
       authDomain: "oata-8c05b.firebaseapp.com",
@@ -36,6 +37,12 @@
     <button id="editButton" onclick="toggleEditMode()">編集</button>
   </div>
   
+  <!-- 画像アップロードエリア -->
+  <h3>画像アップロード</h3>
+  <input type="file" id="imageInput" accept="image/*"><br>
+  <button onclick="uploadImage()">画像をアップロード</button>
+  <div id="uploadedImage"></div>
+
   <h3>コメント一覧</h3>
   <div id="commentsList"></div>
   
@@ -57,7 +64,7 @@
     let currentData = {};
     let editing = false;
 
-    // 案件情報を表示
+    // 案件情報を読み込み、表示（画像URLがあれば表示）
     function loadCaseDetails() {
       db.collection("companies").doc(companyId).collection("threads").doc(threadId)
         .get()
@@ -84,11 +91,12 @@
         <p>金額（予定）: ${currentData.estimatedPrice || "-"}</p>
         <p>金額（確定）: ${currentData.confirmedPrice || "-"}</p>
         <p>備考: ${currentData.remarks || "-"}</p>
+        ${ currentData.imageURL ? `<img src="${currentData.imageURL}" style="max-width:100%; height:auto; margin-top:10px;">` : "" }
         <p>作成日時: ${currentData.last_updated.toDate().toLocaleString()}</p>
       `;
     }
 
-    // 編集モードの切り替え
+    // 編集モードの切替
     function toggleEditMode() {
       const detailsDiv = document.getElementById("caseDetails");
       if (!editing) {
@@ -110,12 +118,6 @@
         renderCaseDetails();
         editing = false;
       }
-    }
-
-    // 編集キャンセル用
-    function cancelEdits() {
-      renderCaseDetails();
-      editing = false;
     }
 
     // 編集内容の保存
@@ -160,7 +162,6 @@
           alert("案件が更新されました！");
           editing = false;
           loadCaseDetails();
-          // 編集された項目のみを編集履歴としてコメントに追加
           if (changes.length > 0) {
             const editCommentText = "編集内容: " + changes.join(", ");
             const editComment = {
@@ -193,20 +194,18 @@
         });
     }
 
-    // コメントを投稿
+    // コメント投稿
     function submitComment() {
       const newComment = document.getElementById("newComment").value;
       if (!newComment) {
         alert("コメントを入力してください。");
         return;
       }
-
       const commentData = {
-        name: "販売店担当者", // 固定またはログイン情報から取得
+        name: "販売店担当者",
         text: newComment,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       };
-
       db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments")
         .add(commentData)
         .then(() => {
@@ -219,7 +218,7 @@
         });
     }
 
-    // コメント投稿時の通知
+    // EmailJS 通知
     function sendEmailNotification(comment) {
       emailjs.send("YOUR_EMAILJS_SERVICE_ID", "YOUR_EMAILJS_TEMPLATE_ID", {
         to_email: "notify@example.com",
@@ -229,7 +228,7 @@
       .catch(error => console.error("メール送信エラー:", error));
     }
 
-    // 販売店ダッシュボードへ戻るボタンの処理
+    // 販売店ダッシュボードへ戻る
     function goToDashboard() {
       window.location.href = "dashboard.html?company=" + companyId;
     }
