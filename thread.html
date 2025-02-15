@@ -8,13 +8,13 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-  <!-- EmailJS -->
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
   <script>
     // EmailJS 初期化
     emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
 
-    // Firebase 初期化（各自の設定に置換）
+    // Firebase 初期化（修正済みの storageBucket）
     const firebaseConfig = {
       apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
       authDomain: "oata-8c05b.firebaseapp.com",
@@ -25,33 +25,10 @@
       measurementId: "G-02LMR8FTNX"
     };
     firebase.initializeApp(firebaseConfig);
-  </script>
-</head>
-<body>
-  <!-- 販売店ダッシュボードへ戻るボタン -->
-  <button onclick="goToDashboard()" style="margin-bottom: 20px;">販売店ダッシュボード</button>
 
-  <h1>案件詳細ページ</h1>
-  <div id="caseDetailsContainer">
-    <div id="caseDetails"></div>
-    <button id="editButton" onclick="toggleEditMode()">編集</button>
-  </div>
-  
-  <!-- 画像アップロードエリア -->
-  <h3>画像アップロード</h3>
-  <input type="file" id="imageInput" accept="image/*"><br>
-  <button onclick="uploadImage()">画像をアップロード</button>
-  <div id="uploadedImage"></div>
-
-  <h3>コメント一覧</h3>
-  <div id="commentsList"></div>
-  
-  <h3>新しいコメントを投稿</h3>
-  <textarea id="newComment" placeholder="コメントを入力"></textarea><br>
-  <button onclick="submitComment()">コメントを投稿</button>
-
-  <script>
     const db = firebase.firestore();
+    const storage = firebase.storage();
+
     const params = new URLSearchParams(window.location.search);
     const companyId = params.get("company");
     const threadId = params.get("thread");
@@ -62,9 +39,35 @@
     }
 
     let currentData = {};
-    let editing = false;
 
-    // 案件情報を読み込み、表示（画像URLがあれば表示）
+    function uploadImage() {
+      const fileInput = document.getElementById("imageInput");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("画像を選択してください。");
+        return;
+      }
+
+      const storageRef = storage.ref(`uploads/${companyId}/${threadId}/${file.name}`);
+      storageRef.put(file)
+        .then(snapshot => snapshot.ref.getDownloadURL())
+        .then(downloadURL => {
+          console.log("アップロード成功:", downloadURL);
+          document.getElementById("uploadedImage").innerHTML = `<img src="${downloadURL}" style="max-width: 100%; height: auto;">`;
+
+          return db.collection("companies").doc(companyId).collection("threads").doc(threadId)
+            .update({ imageURL: downloadURL });
+        })
+        .then(() => {
+          alert("画像がアップロードされました！");
+        })
+        .catch(error => {
+          console.error("画像アップロードエラー:", error);
+          alert("画像のアップロードに失敗しました。");
+        });
+    }
+
     function loadCaseDetails() {
       db.collection("companies").doc(companyId).collection("threads").doc(threadId)
         .get()
@@ -75,7 +78,7 @@
           }
         })
         .catch(error => {
-          console.error("Error loading case details:", error);
+          console.error("案件詳細の読み込みエラー:", error);
         });
     }
 
@@ -92,109 +95,10 @@
         <p>金額（確定）: ${currentData.confirmedPrice || "-"}</p>
         <p>備考: ${currentData.remarks || "-"}</p>
         ${ currentData.imageURL ? `<img src="${currentData.imageURL}" style="max-width:100%; height:auto; margin-top:10px;">` : "" }
-        <p>作成日時: ${currentData.last_updated.toDate().toLocaleString()}</p>
+        <p>作成日時: ${currentData.last_updated?.toDate().toLocaleString()}</p>
       `;
     }
 
-    // 編集モードの切替
-    function toggleEditMode() {
-      const detailsDiv = document.getElementById("caseDetails");
-      if (!editing) {
-        detailsDiv.innerHTML = `
-          <h2><input type="text" id="edit_caseTitle" value="${currentData.caseTitle}"></h2>
-          <p>出発地: <input type="text" id="edit_departure" value="${currentData.departure}"></p>
-          <p>出発日: <input type="date" id="edit_departureDate" value="${currentData.departureDate || ''}"></p>
-          <p>帰着地: <input type="text" id="edit_arrival" value="${currentData.arrival}"></p>
-          <p>帰着日: <input type="date" id="edit_arrivalDate" value="${currentData.arrivalDate || ''}"></p>
-          <p>マル契種類: <input type="text" id="edit_contractType" value="${currentData.contractType}"></p>
-          <p>金額（予定）: <input type="number" id="edit_estimatedPrice" value="${currentData.estimatedPrice || ''}"></p>
-          <p>金額（確定）: <input type="number" id="edit_confirmedPrice" value="${currentData.confirmedPrice || ''}"></p>
-          <p>備考: <textarea id="edit_remarks">${currentData.remarks || ''}</textarea></p>
-          <button onclick="saveEdits()">保存</button>
-          <button onclick="toggleEditMode()">キャンセル</button>
-        `;
-        editing = true;
-      } else {
-        renderCaseDetails();
-        editing = false;
-      }
-    }
-
-    // 編集内容の保存
-    function saveEdits() {
-      const newCaseTitle = document.getElementById("edit_caseTitle").value.trim();
-      const newDeparture = document.getElementById("edit_departure").value.trim();
-      const newDepartureDate = document.getElementById("edit_departureDate").value;
-      const newArrival = document.getElementById("edit_arrival").value.trim();
-      const newArrivalDate = document.getElementById("edit_arrivalDate").value;
-      const newContractType = document.getElementById("edit_contractType").value.trim();
-      const newEstimatedPrice = document.getElementById("edit_estimatedPrice").value.trim();
-      const newConfirmedPrice = document.getElementById("edit_confirmedPrice").value.trim();
-      const newRemarks = document.getElementById("edit_remarks").value.trim();
-
-      const updatedData = {
-        caseTitle: newCaseTitle,
-        departure: newDeparture,
-        departureDate: newDepartureDate,
-        arrival: newArrival,
-        arrivalDate: newArrivalDate,
-        contractType: newContractType,
-        estimatedPrice: newEstimatedPrice,
-        confirmedPrice: newConfirmedPrice,
-        remarks: newRemarks,
-        last_updated: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      // 変更された項目のみ抽出
-      let changes = [];
-      if (newCaseTitle !== currentData.caseTitle) changes.push(`案件名: ${newCaseTitle}`);
-      if (newDeparture !== currentData.departure) changes.push(`出発地: ${newDeparture}`);
-      if (newDepartureDate !== currentData.departureDate) changes.push(`出発日: ${newDepartureDate}`);
-      if (newArrival !== currentData.arrival) changes.push(`帰着地: ${newArrival}`);
-      if (newArrivalDate !== currentData.arrivalDate) changes.push(`帰着日: ${newArrivalDate}`);
-      if (newContractType !== currentData.contractType) changes.push(`マル契種類: ${newContractType}`);
-      if (newEstimatedPrice !== currentData.estimatedPrice) changes.push(`金額（予定）: ${newEstimatedPrice}`);
-      if (newConfirmedPrice !== currentData.confirmedPrice) changes.push(`金額（確定）: ${newConfirmedPrice}`);
-      if (newRemarks !== currentData.remarks) changes.push(`備考: ${newRemarks}`);
-
-      db.collection("companies").doc(companyId).collection("threads").doc(threadId).update(updatedData)
-        .then(() => {
-          alert("案件が更新されました！");
-          editing = false;
-          loadCaseDetails();
-          if (changes.length > 0) {
-            const editCommentText = "編集内容: " + changes.join(", ");
-            const editComment = {
-              name: "編集",
-              text: editCommentText,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            return db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments").add(editComment);
-          }
-        })
-        .then(() => {
-          console.log("編集コメントを追加しました");
-        })
-        .catch(error => {
-          console.error("Error updating case:", error);
-        });
-    }
-
-    // コメント一覧を表示
-    function loadComments() {
-      db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments")
-        .orderBy("timestamp", "asc")
-        .onSnapshot(snapshot => {
-          const commentsList = document.getElementById("commentsList");
-          commentsList.innerHTML = "";
-          snapshot.forEach(doc => {
-            const comment = doc.data();
-            commentsList.innerHTML += `<p>${comment.name}: ${comment.text} (${comment.timestamp.toDate().toLocaleString()})</p>`;
-          });
-        });
-    }
-
-    // コメント投稿
     function submitComment() {
       const newComment = document.getElementById("newComment").value;
       if (!newComment) {
@@ -211,31 +115,43 @@
         .then(() => {
           document.getElementById("newComment").value = "";
           alert("コメントを投稿しました！");
-          sendEmailNotification(newComment);
         })
         .catch(error => {
-          console.error("Error posting comment:", error);
+          console.error("コメント投稿エラー:", error);
         });
     }
 
-    // EmailJS 通知
-    function sendEmailNotification(comment) {
-      emailjs.send("YOUR_EMAILJS_SERVICE_ID", "YOUR_EMAILJS_TEMPLATE_ID", {
-        to_email: "notify@example.com",
-        message: `新しいコメントが投稿されました: ${comment}`
-      })
-      .then(response => console.log("メール通知成功:", response))
-      .catch(error => console.error("メール送信エラー:", error));
-    }
-
-    // 販売店ダッシュボードへ戻る
     function goToDashboard() {
-      window.location.href = "dashboard.html?company=" + companyId;
+      window.location.href = `dashboard.html?company=${companyId}`;
     }
 
-    // 初期化
-    loadCaseDetails();
-    loadComments();
+    window.onload = () => {
+      loadCaseDetails();
+    };
   </script>
+</head>
+
+<body>
+  <button onclick="goToDashboard()" style="margin-bottom: 20px;">販売店ダッシュボード</button>
+
+  <h1>案件詳細ページ</h1>
+  <div id="caseDetailsContainer">
+    <div id="caseDetails"></div>
+    <button id="editButton" onclick="toggleEditMode()">編集</button>
+  </div>
+
+  <!-- 画像アップロード -->
+  <h3>画像アップロード</h3>
+  <input type="file" id="imageInput" accept="image/*"><br>
+  <button onclick="uploadImage()">画像をアップロード</button>
+  <div id="uploadedImage"></div>
+
+  <h3>コメント一覧</h3>
+  <div id="commentsList"></div>
+  
+  <h3>新しいコメントを投稿</h3>
+  <textarea id="newComment" placeholder="コメントを入力"></textarea><br>
+  <button onclick="submitComment()">コメントを投稿</button>
+
 </body>
 </html>
