@@ -14,7 +14,7 @@
     // EmailJS 初期化
     emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
 
-    // Firebase 初期化（修正済みの storageBucket）
+    // Firebase 初期化
     const firebaseConfig = {
       apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
       authDomain: "oata-8c05b.firebaseapp.com",
@@ -50,14 +50,29 @@
       }
 
       const storageRef = storage.ref(`uploads/${companyId}/${threadId}/${file.name}`);
+      
       storageRef.put(file)
         .then(snapshot => snapshot.ref.getDownloadURL())
         .then(downloadURL => {
           console.log("アップロード成功:", downloadURL);
           document.getElementById("uploadedImage").innerHTML = `<img src="${downloadURL}" style="max-width: 100%; height: auto;">`;
 
-          return db.collection("companies").doc(companyId).collection("threads").doc(threadId)
-            .update({ imageURL: downloadURL });
+          // Firestore に画像 URL を保存（事前にドキュメントがない場合は作成する）
+          const threadRef = db.collection("companies").doc(companyId).collection("threads").doc(threadId);
+          
+          return threadRef.get().then(doc => {
+            if (!doc.exists) {
+              // もし Firestore にスレッドが存在しなければ、新規作成
+              return threadRef.set({ 
+                imageURL: downloadURL, 
+                caseTitle: "新規案件", 
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            } else {
+              // 既存のスレッドがあれば更新
+              return threadRef.update({ imageURL: downloadURL });
+            }
+          });
         })
         .then(() => {
           alert("画像がアップロードされました！");
@@ -69,12 +84,22 @@
     }
 
     function loadCaseDetails() {
-      db.collection("companies").doc(companyId).collection("threads").doc(threadId)
-        .get()
+      const threadRef = db.collection("companies").doc(companyId).collection("threads").doc(threadId);
+
+      threadRef.get()
         .then(doc => {
           if (doc.exists) {
             currentData = doc.data();
             renderCaseDetails();
+          } else {
+            console.log("ドキュメントが存在しません。自動作成します。");
+            threadRef.set({
+              caseTitle: "新規案件",
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+              alert("新しい案件が作成されました。");
+              loadCaseDetails(); // 再読み込み
+            });
           }
         })
         .catch(error => {
@@ -85,40 +110,18 @@
     function renderCaseDetails() {
       const detailsDiv = document.getElementById("caseDetails");
       detailsDiv.innerHTML = `
-        <h2>${currentData.caseTitle}</h2>
-        <p>出発地: ${currentData.departure}</p>
+        <h2>${currentData.caseTitle || "新規案件"}</h2>
+        <p>出発地: ${currentData.departure || "-"}</p>
         <p>出発日: ${currentData.departureDate || "-"}</p>
-        <p>帰着地: ${currentData.arrival}</p>
+        <p>帰着地: ${currentData.arrival || "-"}</p>
         <p>帰着日: ${currentData.arrivalDate || "-"}</p>
-        <p>マル契種類: ${currentData.contractType}</p>
+        <p>マル契種類: ${currentData.contractType || "-"}</p>
         <p>金額（予定）: ${currentData.estimatedPrice || "-"}</p>
         <p>金額（確定）: ${currentData.confirmedPrice || "-"}</p>
         <p>備考: ${currentData.remarks || "-"}</p>
         ${ currentData.imageURL ? `<img src="${currentData.imageURL}" style="max-width:100%; height:auto; margin-top:10px;">` : "" }
-        <p>作成日時: ${currentData.last_updated?.toDate().toLocaleString()}</p>
+        <p>作成日時: ${currentData.createdAt ? currentData.createdAt.toDate().toLocaleString() : "-"}</p>
       `;
-    }
-
-    function submitComment() {
-      const newComment = document.getElementById("newComment").value;
-      if (!newComment) {
-        alert("コメントを入力してください。");
-        return;
-      }
-      const commentData = {
-        name: "販売店担当者",
-        text: newComment,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments")
-        .add(commentData)
-        .then(() => {
-          document.getElementById("newComment").value = "";
-          alert("コメントを投稿しました！");
-        })
-        .catch(error => {
-          console.error("コメント投稿エラー:", error);
-        });
     }
 
     function goToDashboard() {
