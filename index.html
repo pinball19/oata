@@ -1,70 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <link rel="stylesheet" type="text/css" href="style.css">
-  <meta charset="UTF-8">
-  <title>販売店ログイン</title>
-  <!-- Firebase SDK（互換モード） -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <!-- EmailJS（通知機能用） -->
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-  <script>
-    // EmailJS 初期化（YOUR_EMAILJS_PUBLIC_KEY をご自身のものに置換）
-    emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
-
-    // Firebase 初期化（以下はあなたのFirebaseプロジェクトの設定に置換してください）
-      const firebaseConfig = {
-        apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
-        authDomain: "oata-8c05b.firebaseapp.com",
-        projectId: "oata-8c05b",
-        storageBucket: "oata-8c05b.firebasestorage.app",
-        messagingSenderId: "949261471175",
-        appId: "1:949261471175:web:28482b939262d8e93f1de2",
-        measurementId: "G-02LMR8FTNX"
-      };
-    firebase.initializeApp(firebaseConfig);
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handsontable Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@12.1.0/dist/handsontable.full.min.css">
 </head>
 <body>
-  <h2>販売店ログイン</h2>
-  <input type="text" id="companyID" placeholder="販売店ID">
-  <input type="password" id="password" placeholder="パスワード">
-  <button onclick="login()">ログイン</button>
+    <div id="table"></div>
 
-  <script>
-    const db = firebase.firestore();
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@12.1.0/dist/handsontable.full.min.js"></script>
+    <script>
+        const container = document.getElementById('table');
 
-    function login() {
-      const companyID = document.getElementById("companyID").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if (!companyID || !password) {
-        alert("販売店IDとパスワードを入力してください");
-        return;
-      }
-
-      // Firestore の companies コレクションから該当ドキュメントを取得
-      db.collection("companies").doc(companyID).get()
-        .then(doc => {
-          if (!doc.exists) {
-            alert("販売店IDが存在しません");
-            return;
-          }
-          const data = doc.data();
-          // ※ 本来はハッシュ化されたパスワードを検証すべきです
-          if (data.password !== password) {
-            alert("パスワードが間違っています");
-            return;
-          }
-          // ログイン成功：company_idをlocalStorageに保存して、ダッシュボードへリダイレクト
-          localStorage.setItem("company_id", companyID);
-          window.location.href = "dashboard.html?company=" + companyID;
-        })
-        .catch(error => {
-          console.error("Error fetching company data:", error);
+        const hot = new Handsontable(container, {
+            data: [
+                ["名前", "年齢", "職業"],
+                ["田中", "30", "エンジニア"],
+                ["鈴木", "25", "デザイナー"],
+            ],
+            colHeaders: true,
+            rowHeaders: true,
+            manualColumnResize: true,  // ✅ 列幅をドラッグで変更可能
+            manualRowResize: true,  // ✅ 行の高さをドラッグで変更可能
+            width: "100%",
+            height: "auto",
+            licenseKey: "non-commercial-and-evaluation"
         });
-    }
-  </script>
+    </script>
 </body>
 </html>
