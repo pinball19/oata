@@ -118,7 +118,7 @@
 
       // 上部の基本情報
       let html = `
-        <h2>${currentData.groupName || "-"}</h2>
+        <h2>団体名: ${currentData.groupName || "-"}</h2>
         <p>団体名ふりがな: ${currentData.groupNameFurigana || "-"}</p>
         <p>団体種別: ${currentData.groupType || "-"}</p>
         <p>出発日: ${currentData.departureDate || "-"}</p>
@@ -134,10 +134,10 @@
             <th>列車名</th>
             <th>発地</th>
             <th>着地</th>
-            <th>大人の数</th>
-            <th>小児の数</th>
-            <th>添乗員の数</th>
-            <th>座席種別</th>
+            <th>大人</th>
+            <th>小児</th>
+            <th>添乗員</th>
+            <th>座席</th>
           </tr>
         </thead>
         <tbody>
@@ -191,7 +191,7 @@
       if (!editing) {
         // 編集フォーム表示（テーブル形式）
         detailsDiv.innerHTML = `
-          <h2><input type="text" id="edit_groupName" value="${currentData.groupName || ''}"></h2>
+          <h2>団体名: <input type="text" id="edit_groupName" value="${currentData.groupName || ''}"></h2>
           <p>団体名ふりがな: <input type="text" id="edit_groupNameFurigana" value="${currentData.groupNameFurigana || ''}"></p>
           <p>団体種別: <input type="text" id="edit_groupType" value="${currentData.groupType || ''}"></p>
           <p>出発日: <input type="date" id="edit_departureDate" value="${currentData.departureDate || ''}"></p>
@@ -204,10 +204,10 @@
                 <th>列車名</th>
                 <th>発地</th>
                 <th>着地</th>
-                <th>大人の数</th>
-                <th>小児の数</th>
-                <th>添乗員の数</th>
-                <th>座席種別</th>
+                <th>大人</th>
+                <th>小児</th>
+                <th>添乗員</th>
+                <th>座席</th>
               </tr>
             </thead>
             <tbody>
@@ -321,19 +321,19 @@
       if (newFirstChoice !== currentData.firstChoice) changes.push(`第1希望(列車名): ${newFirstChoice}`);
       if (newTrainName !== currentData.trainName) changes.push(`列車名: ${newTrainName}`);
       if (newDeparture !== currentData.departure) changes.push(`発地: ${newDeparture}`);
-      if (newNumberOfAdults !== currentData.numberOfAdults) changes.push(`大人の数: ${newNumberOfAdults}`);
-      if (newNumberOfChildren !== currentData.numberOfChildren) changes.push(`小児の数: ${newNumberOfChildren}`);
-      if (newNumberOfAttendants !== currentData.numberOfAttendants) changes.push(`添乗員の数: ${newNumberOfAttendants}`);
-      if (newSeatType !== currentData.seatType) changes.push(`座席種別: ${newSeatType}`);
+      if (newNumberOfAdults !== currentData.numberOfAdults) changes.push(`大人: ${newNumberOfAdults}`);
+      if (newNumberOfChildren !== currentData.numberOfChildren) changes.push(`小児: ${newNumberOfChildren}`);
+      if (newNumberOfAttendants !== currentData.numberOfAttendants) changes.push(`添乗員: ${newNumberOfAttendants}`);
+      if (newSeatType !== currentData.seatType) changes.push(`座席: ${newSeatType}`);
 
       // 第2希望
       if (newSecondChoice !== currentData.secondChoice) changes.push(`第2希望(列車名): ${newSecondChoice}`);
       if (newSecondTrainName !== currentData.secondTrainName) changes.push(`列車名: ${newSecondTrainName}`);
       if (newSecondDeparture !== currentData.secondDeparture) changes.push(`発地: ${newSecondDeparture}`);
-      if (newSecondNumberOfAdults !== currentData.secondNumberOfAdults) changes.push(`大人の数(第2希望): ${newSecondNumberOfAdults}`);
-      if (newSecondNumberOfChildren !== currentData.secondNumberOfChildren) changes.push(`小児の数(第2希望): ${newSecondNumberOfChildren}`);
-      if (newSecondNumberOfAttendants !== currentData.secondNumberOfAttendants) changes.push(`添乗員の数(第2希望): ${newSecondNumberOfAttendants}`);
-      if (newSecondSeatType !== currentData.secondSeatType) changes.push(`座席種別(第2希望): ${newSecondSeatType}`);
+      if (newSecondNumberOfAdults !== currentData.secondNumberOfAdults) changes.push(`大人(第2希望): ${newSecondNumberOfAdults}`);
+      if (newSecondNumberOfChildren !== currentData.secondNumberOfChildren) changes.push(`小児(第2希望): ${newSecondNumberOfChildren}`);
+      if (newSecondNumberOfAttendants !== currentData.secondNumberOfAttendants) changes.push(`添乗員(第2希望): ${newSecondNumberOfAttendants}`);
+      if (newSecondSeatType !== currentData.secondSeatType) changes.push(`座席(第2希望): ${newSecondSeatType}`);
 
       // 画像がアップロードされた場合のみStorageにアップロード
       const fileInput = document.getElementById("imageUpload");
