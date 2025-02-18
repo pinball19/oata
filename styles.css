@@ -1,48 +1,52 @@
+/* 🔹 全体のフォントとレイアウト */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 .container {
     width: 90%;
     max-width: 600px;
-    margin: 20px auto;
     padding: 20px;
     background: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
-/* 🔹 ラベルと入力欄を横並びにする */
+/* 🔹 ラベルと入力欄のデザイン */
 .form-group {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .form-group label {
     width: 120px;
     font-weight: bold;
     margin-right: 10px;
+    color: #333;
 }
 
 .form-group input, .form-group textarea {
     flex: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.request-group {
-    border: 1px solid #ddd;
     padding: 10px;
-    margin-top: 15px;
-    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border 0.3s ease;
 }
 
-/* 🔹 選択ボタンのデザイン */
+.form-group input:focus, .form-group textarea:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+/* 🔹 選択ボタン（マル販 & 座席） */
 .option-group {
     display: flex;
     gap: 10px;
@@ -50,32 +54,45 @@ body {
 
 .option-btn, .seat-btn {
     flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    background: white;
+    padding: 12px;
+    border: 2px solid #ccc;
+    background: #fff;
+    color: #333;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
     text-align: center;
     transition: all 0.3s ease-in-out;
+    font-size: 14px;
+    font-weight: bold;
 }
 
-/* 🔹 選択したボタンのハイライト */
+/* 🔹 選択時のスタイル */
 .option-btn.selected, .seat-btn.selected {
     background-color: #007BFF;
     color: white;
-    border-color: #0056b3;
+    border-color: #007BFF;
+}
+
+/* 🔹 リクエストブロック（希望欄） */
+.request-group {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-top: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
 }
 
 /* 🔹 送信ボタン */
 button {
     width: 100%;
-    margin-top: 10px;
-    padding: 10px;
+    padding: 12px;
     border: none;
     background: #007BFF;
     color: white;
+    font-size: 16px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
+    transition: background 0.3s ease-in-out;
 }
 
 button:hover {
