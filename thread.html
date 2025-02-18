@@ -457,8 +457,8 @@
 
     // コメント投稿時の通知
     function sendEmailNotification(comment) {
-      emailjs.send("YOUR_EMAILJS_SERVICE_ID", "YOUR_EMAILJS_TEMPLATE_ID", {
-        to_email: "notify@example.com",
+      emailjs.send("service_yk6nvsg", "template_3xbq589", {
+        to_email: "pinball_sawara@yahoo.co.jp",
         message: `新しいコメントが投稿されました: ${comment}`
       })
       .then(response => console.log("メール通知成功:", response))
