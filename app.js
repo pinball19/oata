@@ -30,7 +30,6 @@ async function loadFirestoreData() {
         document.getElementById("nameCell").textContent = data.name || "N/A";
         document.getElementById("ageCell").textContent = data.age || "N/A";
         document.getElementById("jobCell").textContent = data.job || "N/A";
-
     } else {
         console.warn("Firestore にデータが存在しません。");
     }
@@ -38,3 +37,35 @@ async function loadFirestoreData() {
 
 // 🔹 Firestore のデータを読み込む
 loadFirestoreData();
+
+// 🔹 コンソールでスタイルを変更できる関数
+window.updateTableStyle = function ({ colWidths, rowHeight, fontSize, textColor }) {
+    const table = document.getElementById("dataTable");
+
+    // 列の幅を変更
+    if (colWidths) {
+        colWidths.forEach((width, index) => {
+            const th = table.rows[0].cells[index];
+            const tds = table.querySelectorAll(`td:nth-child(${index + 1})`);
+            if (th) th.style.width = width + "px";
+            tds.forEach(td => td.style.width = width + "px");
+        });
+    }
+
+    // 行の高さを変更
+    if (rowHeight) {
+        table.querySelectorAll("tr").forEach(row => {
+            row.style.height = rowHeight + "px";
+        });
+    }
+
+    // フォントサイズとテキストカラーを変更
+    if (fontSize || textColor) {
+        table.querySelectorAll("th, td").forEach(cell => {
+            if (fontSize) cell.style.fontSize = fontSize + "px";
+            if (textColor) cell.style.color = textColor;
+        });
+    }
+
+    console.log("テーブルスタイルが更新されました！");
+};
