@@ -111,10 +111,10 @@
         <p>列車名: ${currentData.trainName || "-"}</p>
         <p>発地: ${currentData.departure || "-"}</p>
         <p>着地: ${currentData.arrival || "-"}</p>
-        <p>大人の数: ${currentData.numberOfAdults || "-"}</p>
-        <p>小児の数: ${currentData.numberOfChildren || "-"}</p>
-        <p>添乗員の数: ${currentData.numberOfAttendants || "-"}</p>
-        <p>座席種別: ${currentData.seatType || "-"}</p>
+        <p>大人: ${currentData.numberOfAdults || "-"}</p>
+        <p>小児: ${currentData.numberOfChildren || "-"}</p>
+        <p>添乗員: ${currentData.numberOfAttendants || "-"}</p>
+        <p>座席: ${currentData.seatType || "-"}</p>
         <p>作成日時: ${currentData.last_updated ? currentData.last_updated.toDate().toLocaleString() : "-"}</p>
       `;
 
@@ -146,10 +146,10 @@
           <p>列車名: <input type="text" id="edit_trainName" value="${currentData.trainName || ''}"></p>
           <p>発地: <input type="text" id="edit_departure" value="${currentData.departure || ''}"></p>
           <p>着地: <input type="text" id="edit_arrival" value="${currentData.arrival || ''}"></p>
-          <p>大人の数: <input type="number" id="edit_numberOfAdults" value="${currentData.numberOfAdults || ''}"></p>
-          <p>小児の数: <input type="number" id="edit_numberOfChildren" value="${currentData.numberOfChildren || ''}"></p>
-          <p>添乗員の数: <input type="number" id="edit_numberOfAttendants" value="${currentData.numberOfAttendants || ''}"></p>
-          <p>座席種別: <input type="text" id="edit_seatType" value="${currentData.seatType || ''}"></p>
+          <p>大人: <input type="number" id="edit_numberOfAdults" value="${currentData.numberOfAdults || ''}"></p>
+          <p>小児: <input type="number" id="edit_numberOfChildren" value="${currentData.numberOfChildren || ''}"></p>
+          <p>添乗員: <input type="number" id="edit_numberOfAttendants" value="${currentData.numberOfAttendants || ''}"></p>
+          <p>座席: <input type="text" id="edit_seatType" value="${currentData.seatType || ''}"></p>
           
           <!-- 画像アップロード用のinputを追加 -->
           <p>添付画像（1枚のみ）: <input type="file" id="imageUpload" accept="image/*"></p>
@@ -214,10 +214,10 @@
       if (newTrainName !== currentData.trainName) changes.push(`列車名: ${newTrainName}`);
       if (newDeparture !== currentData.departure) changes.push(`発地: ${newDeparture}`);
       if (newArrival !== currentData.arrival) changes.push(`着地: ${newArrival}`);
-      if (newNumberOfAdults !== currentData.numberOfAdults) changes.push(`大人の数: ${newNumberOfAdults}`);
-      if (newNumberOfChildren !== currentData.numberOfChildren) changes.push(`小児の数: ${newNumberOfChildren}`);
-      if (newNumberOfAttendants !== currentData.numberOfAttendants) changes.push(`添乗員の数: ${newNumberOfAttendants}`);
-      if (newSeatType !== currentData.seatType) changes.push(`座席種別: ${newSeatType}`);
+      if (newNumberOfAdults !== currentData.numberOfAdults) changes.push(`大人: ${newNumberOfAdults}`);
+      if (newNumberOfChildren !== currentData.numberOfChildren) changes.push(`小児: ${newNumberOfChildren}`);
+      if (newNumberOfAttendants !== currentData.numberOfAttendants) changes.push(`添乗員: ${newNumberOfAttendants}`);
+      if (newSeatType !== currentData.seatType) changes.push(`座席: ${newSeatType}`);
 
       // 画像がアップロードされた場合のみStorageにアップロード
       const fileInput = document.getElementById("imageUpload");
