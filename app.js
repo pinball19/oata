@@ -2,9 +2,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Handsontable を正しいCDNからインポート
-import Handsontable from "https://cdn.jsdelivr.net/npm/handsontable@latest/dist/handsontable.full.min.js";
-
 // 🔹 Firebaseの設定
 const firebaseConfig = {
   apiKey: "AIzaSyBYtkWuK0sbCYyQcVhLeFWCPhU7GhMG8pg",
@@ -42,7 +39,7 @@ async function loadData() {
     }
 }
 
-// 🔹 Firestoreのリアルタイムリスナー（他のユーザーの変更も即反映）
+// 🔹 Firestoreのリアルタイムリスナー
 onSnapshot(doc(db, "tables", "sheet1"), (docSnap) => {
     if (docSnap.exists() && hot) {
         console.log("Firestore の変更を検出、データ更新:", docSnap.data().tableData);
