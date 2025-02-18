@@ -102,7 +102,7 @@
       const detailsDiv = document.getElementById("caseDetails");
       // 新しい案件データをHTMLに反映
       let html = `
-        <h2>${currentData.groupName || "-"}</h2>
+        <h2>団体名： ${currentData.groupName || "-"}</h2>
         <p>団体名ふりがな: ${currentData.groupNameFurigana || "-"}</p>
         <p>団体種別: ${currentData.groupType || "-"}</p>
         <p>出発日: ${currentData.departureDate || "-"}</p>
@@ -137,7 +137,7 @@
       if (!editing) {
         // 編集フォーム表示
         detailsDiv.innerHTML = `
-          <h2><input type="text" id="edit_groupName" value="${currentData.groupName || ''}"></h2>
+          <h2>団体名: <input type="text" id="edit_groupName" value="${currentData.groupName || ''}"></h2>
           <p>団体名ふりがな: <input type="text" id="edit_groupNameFurigana" value="${currentData.groupNameFurigana || ''}"></p>
           <p>団体種別: <input type="text" id="edit_groupType" value="${currentData.groupType || ''}"></p>
           <p>出発日: <input type="date" id="edit_departureDate" value="${currentData.departureDate || ''}"></p>
