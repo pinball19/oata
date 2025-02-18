@@ -29,6 +29,20 @@
       0%   { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* テーブルの見た目はお好みで調整 */
+    table {
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5em;
+      text-align: center;
+    }
+    th {
+      background: #f9f9f9;
+    }
   </style>
 
   <script>
@@ -98,24 +112,64 @@
         });
     }
 
+    // 表示用（通常モード）
     function renderCaseDetails() {
       const detailsDiv = document.getElementById("caseDetails");
-      // 新しい案件データをHTMLに反映
+
+      // 上部の基本情報
       let html = `
-        <h2>団体名： ${currentData.groupName || "-"}</h2>
+        <h2>${currentData.groupName || "-"}</h2>
         <p>団体名ふりがな: ${currentData.groupNameFurigana || "-"}</p>
         <p>団体種別: ${currentData.groupType || "-"}</p>
         <p>出発日: ${currentData.departureDate || "-"}</p>
         <p>帰着日: ${currentData.arrivalDate || "-"}</p>
-        <p>第１希望: ${currentData.firstChoice || "-"}</p>
-        <p>列車名: ${currentData.trainName || "-"}</p>
-        <p>発地: ${currentData.departure || "-"}</p>
-        <p>着地: ${currentData.arrival || "-"}</p>
-        <p>大人の数: ${currentData.numberOfAdults || "-"}</p>
-        <p>小児の数: ${currentData.numberOfChildren || "-"}</p>
-        <p>添乗員の数: ${currentData.numberOfAttendants || "-"}</p>
-        <p>座席種別: ${currentData.seatType || "-"}</p>
-        <p>作成日時: ${currentData.last_updated ? currentData.last_updated.toDate().toLocaleString() : "-"}</p>
+      `;
+
+      // 第1希望・第2希望をテーブル形式で表示
+      html += `
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>列車名</th>
+            <th>発地</th>
+            <th>着地</th>
+            <th>大人の数</th>
+            <th>小児の数</th>
+            <th>添乗員の数</th>
+            <th>座席種別</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 第1希望 -->
+          <tr>
+            <th>第1希望</th>
+            <td>${currentData.firstChoice || "-"}</td>
+            <td>${currentData.trainName || "-"}</td>
+            <td>${currentData.departure || "-"}</td>
+            <td>${currentData.numberOfAdults || "-"}</td>
+            <td>${currentData.numberOfChildren || "-"}</td>
+            <td>${currentData.numberOfAttendants || "-"}</td>
+            <td>${currentData.seatType || "-"}</td>
+          </tr>
+          <!-- 第2希望 -->
+          <tr>
+            <th>第2希望</th>
+            <td>${currentData.secondChoice || "-"}</td>
+            <td>${currentData.secondTrainName || "-"}</td>
+            <td>${currentData.secondDeparture || "-"}</td>
+            <td>${currentData.secondNumberOfAdults || "-"}</td>
+            <td>${currentData.secondNumberOfChildren || "-"}</td>
+            <td>${currentData.secondNumberOfAttendants || "-"}</td>
+            <td>${currentData.secondSeatType || "-"}</td>
+          </tr>
+        </tbody>
+      </table>
+      `;
+
+      // 更新日時
+      html += `
+        <p>最終更新: ${currentData.last_updated ? currentData.last_updated.toDate().toLocaleString() : "-"}</p>
       `;
 
       // 画像があれば表示
@@ -135,22 +189,53 @@
     function toggleEditMode() {
       const detailsDiv = document.getElementById("caseDetails");
       if (!editing) {
-        // 編集フォーム表示
+        // 編集フォーム表示（テーブル形式）
         detailsDiv.innerHTML = `
-          <h2>団体名: <input type="text" id="edit_groupName" value="${currentData.groupName || ''}"></h2>
+          <h2><input type="text" id="edit_groupName" value="${currentData.groupName || ''}"></h2>
           <p>団体名ふりがな: <input type="text" id="edit_groupNameFurigana" value="${currentData.groupNameFurigana || ''}"></p>
           <p>団体種別: <input type="text" id="edit_groupType" value="${currentData.groupType || ''}"></p>
           <p>出発日: <input type="date" id="edit_departureDate" value="${currentData.departureDate || ''}"></p>
           <p>帰着日: <input type="date" id="edit_arrivalDate" value="${currentData.arrivalDate || ''}"></p>
-          <p>第１希望: <input type="text" id="edit_firstChoice" value="${currentData.firstChoice || ''}"></p>
-          <p>列車名: <input type="text" id="edit_trainName" value="${currentData.trainName || ''}"></p>
-          <p>発地: <input type="text" id="edit_departure" value="${currentData.departure || ''}"></p>
-          <p>着地: <input type="text" id="edit_arrival" value="${currentData.arrival || ''}"></p>
-          <p>大人の数: <input type="number" id="edit_numberOfAdults" value="${currentData.numberOfAdults || ''}"></p>
-          <p>小児の数: <input type="number" id="edit_numberOfChildren" value="${currentData.numberOfChildren || ''}"></p>
-          <p>添乗員の数: <input type="number" id="edit_numberOfAttendants" value="${currentData.numberOfAttendants || ''}"></p>
-          <p>座席種別: <input type="text" id="edit_seatType" value="${currentData.seatType || ''}"></p>
-          
+
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>列車名</th>
+                <th>発地</th>
+                <th>着地</th>
+                <th>大人の数</th>
+                <th>小児の数</th>
+                <th>添乗員の数</th>
+                <th>座席種別</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 第1希望 -->
+              <tr>
+                <th>第1希望</th>
+                <td><input type="text" id="edit_firstChoice" value="${currentData.firstChoice || ''}"></td>
+                <td><input type="text" id="edit_trainName" value="${currentData.trainName || ''}"></td>
+                <td><input type="text" id="edit_departure" value="${currentData.departure || ''}"></td>
+                <td><input type="number" id="edit_numberOfAdults" value="${currentData.numberOfAdults || ''}"></td>
+                <td><input type="number" id="edit_numberOfChildren" value="${currentData.numberOfChildren || ''}"></td>
+                <td><input type="number" id="edit_numberOfAttendants" value="${currentData.numberOfAttendants || ''}"></td>
+                <td><input type="text" id="edit_seatType" value="${currentData.seatType || ''}"></td>
+              </tr>
+              <!-- 第2希望 -->
+              <tr>
+                <th>第2希望</th>
+                <td><input type="text" id="edit_secondChoice" value="${currentData.secondChoice || ''}"></td>
+                <td><input type="text" id="edit_secondTrainName" value="${currentData.secondTrainName || ''}"></td>
+                <td><input type="text" id="edit_secondDeparture" value="${currentData.secondDeparture || ''}"></td>
+                <td><input type="number" id="edit_secondNumberOfAdults" value="${currentData.secondNumberOfAdults || ''}"></td>
+                <td><input type="number" id="edit_secondNumberOfChildren" value="${currentData.secondNumberOfChildren || ''}"></td>
+                <td><input type="number" id="edit_secondNumberOfAttendants" value="${currentData.secondNumberOfAttendants || ''}"></td>
+                <td><input type="text" id="edit_secondSeatType" value="${currentData.secondSeatType || ''}"></td>
+              </tr>
+            </tbody>
+          </table>
+
           <!-- 画像アップロード用のinputを追加 -->
           <p>添付画像（1枚のみ）: <input type="file" id="imageUpload" accept="image/*"></p>
 
@@ -170,20 +255,30 @@
       // ★ 保存前にスピナーを表示
       document.getElementById("spinner").style.display = "block";
 
-      // 新しい項目の取得
+      // 基本情報
       const newGroupName = document.getElementById("edit_groupName").value.trim();
       const newGroupNameFurigana = document.getElementById("edit_groupNameFurigana").value.trim();
       const newGroupType = document.getElementById("edit_groupType").value.trim();
       const newDepartureDate = document.getElementById("edit_departureDate").value;
       const newArrivalDate = document.getElementById("edit_arrivalDate").value;
+
+      // 第1希望
       const newFirstChoice = document.getElementById("edit_firstChoice").value.trim();
       const newTrainName = document.getElementById("edit_trainName").value.trim();
       const newDeparture = document.getElementById("edit_departure").value.trim();
-      const newArrival = document.getElementById("edit_arrival").value.trim();
       const newNumberOfAdults = document.getElementById("edit_numberOfAdults").value.trim();
       const newNumberOfChildren = document.getElementById("edit_numberOfChildren").value.trim();
       const newNumberOfAttendants = document.getElementById("edit_numberOfAttendants").value.trim();
       const newSeatType = document.getElementById("edit_seatType").value.trim();
+
+      // 第2希望
+      const newSecondChoice = document.getElementById("edit_secondChoice").value.trim();
+      const newSecondTrainName = document.getElementById("edit_secondTrainName").value.trim();
+      const newSecondDeparture = document.getElementById("edit_secondDeparture").value.trim();
+      const newSecondNumberOfAdults = document.getElementById("edit_secondNumberOfAdults").value.trim();
+      const newSecondNumberOfChildren = document.getElementById("edit_secondNumberOfChildren").value.trim();
+      const newSecondNumberOfAttendants = document.getElementById("edit_secondNumberOfAttendants").value.trim();
+      const newSecondSeatType = document.getElementById("edit_secondSeatType").value.trim();
 
       // 更新データオブジェクト
       const updatedData = {
@@ -192,14 +287,25 @@
         groupType: newGroupType,
         departureDate: newDepartureDate,
         arrivalDate: newArrivalDate,
+
+        // 第1希望
         firstChoice: newFirstChoice,
         trainName: newTrainName,
         departure: newDeparture,
-        arrival: newArrival,
         numberOfAdults: newNumberOfAdults,
         numberOfChildren: newNumberOfChildren,
         numberOfAttendants: newNumberOfAttendants,
         seatType: newSeatType,
+
+        // 第2希望 (新規)
+        secondChoice: newSecondChoice,
+        secondTrainName: newSecondTrainName,
+        secondDeparture: newSecondDeparture,
+        secondNumberOfAdults: newSecondNumberOfAdults,
+        secondNumberOfChildren: newSecondNumberOfChildren,
+        secondNumberOfAttendants: newSecondNumberOfAttendants,
+        secondSeatType: newSecondSeatType,
+
         last_updated: firebase.firestore.FieldValue.serverTimestamp()
       };
 
@@ -210,14 +316,24 @@
       if (newGroupType !== currentData.groupType) changes.push(`団体種別: ${newGroupType}`);
       if (newDepartureDate !== currentData.departureDate) changes.push(`出発日: ${newDepartureDate}`);
       if (newArrivalDate !== currentData.arrivalDate) changes.push(`帰着日: ${newArrivalDate}`);
-      if (newFirstChoice !== currentData.firstChoice) changes.push(`第１希望: ${newFirstChoice}`);
+
+      // 第1希望
+      if (newFirstChoice !== currentData.firstChoice) changes.push(`第1希望(列車名): ${newFirstChoice}`);
       if (newTrainName !== currentData.trainName) changes.push(`列車名: ${newTrainName}`);
       if (newDeparture !== currentData.departure) changes.push(`発地: ${newDeparture}`);
-      if (newArrival !== currentData.arrival) changes.push(`着地: ${newArrival}`);
       if (newNumberOfAdults !== currentData.numberOfAdults) changes.push(`大人の数: ${newNumberOfAdults}`);
       if (newNumberOfChildren !== currentData.numberOfChildren) changes.push(`小児の数: ${newNumberOfChildren}`);
       if (newNumberOfAttendants !== currentData.numberOfAttendants) changes.push(`添乗員の数: ${newNumberOfAttendants}`);
       if (newSeatType !== currentData.seatType) changes.push(`座席種別: ${newSeatType}`);
+
+      // 第2希望
+      if (newSecondChoice !== currentData.secondChoice) changes.push(`第2希望(列車名): ${newSecondChoice}`);
+      if (newSecondTrainName !== currentData.secondTrainName) changes.push(`列車名: ${newSecondTrainName}`);
+      if (newSecondDeparture !== currentData.secondDeparture) changes.push(`発地: ${newSecondDeparture}`);
+      if (newSecondNumberOfAdults !== currentData.secondNumberOfAdults) changes.push(`大人の数(第2希望): ${newSecondNumberOfAdults}`);
+      if (newSecondNumberOfChildren !== currentData.secondNumberOfChildren) changes.push(`小児の数(第2希望): ${newSecondNumberOfChildren}`);
+      if (newSecondNumberOfAttendants !== currentData.secondNumberOfAttendants) changes.push(`添乗員の数(第2希望): ${newSecondNumberOfAttendants}`);
+      if (newSecondSeatType !== currentData.secondSeatType) changes.push(`座席種別(第2希望): ${newSecondSeatType}`);
 
       // 画像がアップロードされた場合のみStorageにアップロード
       const fileInput = document.getElementById("imageUpload");
