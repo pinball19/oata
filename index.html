@@ -3,30 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Handsontable Demo</title>
+    <title>Handsontable Firestore Sync</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@12.1.0/dist/handsontable.full.min.css">
+    <script type="module" src="app.js"></script>
 </head>
 <body>
     <div id="table"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@12.1.0/dist/handsontable.full.min.js"></script>
-    <script>
-        const container = document.getElementById('table');
-
-        const hot = new Handsontable(container, {
-            data: [
-                ["名前", "年齢", "職業"],
-                ["田中", "30", "エンジニア"],
-                ["鈴木", "25", "デザイナー"],
-            ],
-            colHeaders: true,
-            rowHeaders: true,
-            manualColumnResize: true,  // ✅ 列幅をドラッグで変更可能
-            manualRowResize: true,  // ✅ 行の高さをドラッグで変更可能
-            width: "100%",
-            height: "auto",
-            licenseKey: "non-commercial-and-evaluation"
-        });
-    </script>
 </body>
 </html>
