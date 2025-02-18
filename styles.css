@@ -36,10 +36,33 @@ input, select, textarea {
     background: #f9f9f9;
 }
 
-.hidden {
-    display: none;
+/* 🔹 選択ボタンのグループ */
+.option-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
 }
 
+/* 🔹 選択ボタンのデザイン */
+.option-btn, .seat-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+}
+
+/* 🔹 選択したボタンのハイライト */
+.option-btn.selected, .seat-btn.selected {
+    background-color: #007BFF;
+    color: white;
+    border-color: #0056b3;
+}
+
+/* 🔹 送信ボタン */
 button {
     margin-top: 10px;
     padding: 10px;
