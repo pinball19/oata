@@ -1,68 +1,41 @@
-// Firebase SDK を読み込む
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore 表同期</title>
+    <script type="module" src="app.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
 
-// 🔹 Firebaseの設定
-const firebaseConfig = {
-  apiKey: "AIzaSyBYtkWuK0sbCYyQcVhLeFWCPhU7GhMG8pg",
-  authDomain: "exceldisplay-505fc.firebaseapp.com",
-  projectId: "exceldisplay-505fc",
-  storageBucket: "exceldisplay-505fc.appspot.com",
-  messagingSenderId: "491087347583",
-  appId: "1:491087347583:web:64f812b63ad8b6ac0be44a",
-  measurementId: "G-D5H647GG6L"
-};
+    <h2>Firestore からのデータを表に反映</h2>
+    <table>
+        <tr>
+            <th>名前</th>
+            <th>年齢</th>
+            <th>職業</th>
+        </tr>
+        <tr>
+            <td id="nameCell">読み込み中...</td>
+            <td id="ageCell">読み込み中...</td>
+            <td id="jobCell">読み込み中...</td>
+        </tr>
+    </table>
 
-// 🔹 FirebaseアプリとFirestoreを初期化
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// 🔹 Handsontableの設定
-const container = document.getElementById('table');
-let hot;
-
-// 🔹 Firestoreのデータを取得し、Handsontableの特定セルにセット
-async function loadData() {
-    const docRef = doc(db, "tables", "sheet1");  // 🔹 Firestoreのドキュメントを指定
-    const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-        const data = docSnap.data();
-        console.log("Firestore のデータ:", data);
-
-        // 🔹 Handsontable に適用するデータ（デフォルト）
-        let tableData = [
-            ["名前", "年齢", "職業"],
-            ["", "", ""]
-        ];
-
-        // 🔹 Firestore のデータを指定のセルに適用
-        tableData[1][0] = data.name || "";  // 🔹 名前 → 1行目 0列目
-        tableData[1][1] = data.age || "";   // 🔹 年齢 → 1行目 1列目
-        tableData[1][2] = data.job || "";   // 🔹 職業 → 1行目 2列目
-
-        return tableData;
-    } else {
-        console.warn("Firestore にデータが存在しません。");
-        return [
-            ["名前", "年齢", "職業"],
-            ["", "", ""]
-        ];
-    }
-}
-
-// 🔹 Handsontable を初期化
-loadData().then((data) => {
-    hot = new Handsontable(container, {
-        data: data,
-        colHeaders: true,
-        rowHeaders: true,
-        width: "100%",
-        height: "auto",
-        manualColumnResize: true,
-        manualRowResize: true,
-        licenseKey: "non-commercial-and-evaluation"
-    });
-}).catch(error => {
-    console.error("データの読み込みに失敗しました:", error);
-});
+</body>
+</html>
