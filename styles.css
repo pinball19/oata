@@ -15,16 +15,22 @@ body {
     border-radius: 5px;
 }
 
-label {
-    font-weight: bold;
-    margin-top: 10px;
-    display: block;
+/* 🔹 ラベルと入力欄を横並びにする */
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
-input, select, textarea {
-    width: 100%;
+.form-group label {
+    width: 120px;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.form-group input, .form-group textarea {
+    flex: 1;
     padding: 8px;
-    margin-top: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
@@ -36,14 +42,12 @@ input, select, textarea {
     background: #f9f9f9;
 }
 
-/* 🔹 選択ボタンのグループ */
+/* 🔹 選択ボタンのデザイン */
 .option-group {
     display: flex;
     gap: 10px;
-    margin-top: 5px;
 }
 
-/* 🔹 選択ボタンのデザイン */
 .option-btn, .seat-btn {
     flex: 1;
     padding: 10px;
@@ -64,6 +68,7 @@ input, select, textarea {
 
 /* 🔹 送信ボタン */
 button {
+    width: 100%;
     margin-top: 10px;
     padding: 10px;
     border: none;
