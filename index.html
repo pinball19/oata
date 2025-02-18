@@ -12,61 +12,91 @@
     <div class="container">
         <h2>旅行申込フォーム</h2>
 
-        <!-- 基本情報 -->
-        <label>団体名</label>
-        <input type="text" id="groupName">
-
-        <label>団体名ふりがな</label>
-        <input type="text" id="groupNameKana">
-
-        <label>担当</label>
-        <input type="text" id="contactPerson">
-
-        <!-- 🔹 「マル販（ロット）、一般、学生」の選択ボタン -->
-        <label>マル販</label>
-        <div class="option-group" id="ticketType">
-            <button class="option-btn" data-value="ロット">ロット</button>
-            <button class="option-btn" data-value="一般">一般</button>
-            <button class="option-btn" data-value="学生">学生</button>
+        <!-- 🔹 団体情報（横並び） -->
+        <div class="form-group">
+            <label>団体名</label>
+            <input type="text" id="groupName">
         </div>
 
-        <label>旅行出発日</label>
-        <input type="date" id="departureDate">
+        <div class="form-group">
+            <label>団体名ふりがな</label>
+            <input type="text" id="groupNameKana">
+        </div>
 
-        <label>旅行帰着日</label>
-        <input type="date" id="returnDate">
+        <div class="form-group">
+            <label>担当</label>
+            <input type="text" id="contactPerson">
+        </div>
 
-        <!-- 第1希望 -->
-        <div class="request-group">
-            <h3>第1希望</h3>
-            <label>列車名</label>
-            <input type="text" class="trainName">
-
-            <label>発地</label>
-            <input type="text" class="departure">
-
-            <label>着地</label>
-            <input type="text" class="arrival">
-
-            <label>大人の数</label>
-            <input type="number" class="adults">
-
-            <label>小児の数</label>
-            <input type="number" class="children">
-
-            <label>添乗員の数</label>
-            <input type="number" class="guides">
-
-            <!-- 🔹 「座席（ハザ・ロザ）」の選択ボタン -->
-            <label>座席</label>
-            <div class="option-group seat-group">
-                <button class="seat-btn" data-value="ハザ">ハザ</button>
-                <button class="seat-btn" data-value="ロザ">ロザ</button>
+        <!-- 🔹 マル販の選択 -->
+        <div class="form-group">
+            <label>マル販</label>
+            <div class="option-group" id="ticketType">
+                <button class="option-btn" data-value="ロット">ロット</button>
+                <button class="option-btn" data-value="一般">一般</button>
+                <button class="option-btn" data-value="学生">学生</button>
             </div>
         </div>
 
-        <label>その他要望</label>
-        <textarea id="otherRequests"></textarea>
+        <!-- 🔹 日付選択 -->
+        <div class="form-group">
+            <label>旅行出発日</label>
+            <input type="date" id="departureDate">
+        </div>
+
+        <div class="form-group">
+            <label>旅行帰着日</label>
+            <input type="date" id="returnDate">
+        </div>
+
+        <!-- 🔹 第1希望 -->
+        <div class="request-group">
+            <h3>第1希望</h3>
+
+            <div class="form-group">
+                <label>列車名</label>
+                <input type="text" class="trainName">
+            </div>
+
+            <div class="form-group">
+                <label>発地</label>
+                <input type="text" class="departure">
+            </div>
+
+            <div class="form-group">
+                <label>着地</label>
+                <input type="text" class="arrival">
+            </div>
+
+            <div class="form-group">
+                <label>大人の数</label>
+                <input type="number" class="adults">
+            </div>
+
+            <div class="form-group">
+                <label>小児の数</label>
+                <input type="number" class="children">
+            </div>
+
+            <div class="form-group">
+                <label>添乗員の数</label>
+                <input type="number" class="guides">
+            </div>
+
+            <!-- 🔹 座席の選択 -->
+            <div class="form-group">
+                <label>座席</label>
+                <div class="option-group seat-group">
+                    <button class="seat-btn" data-value="ハザ">ハザ</button>
+                    <button class="seat-btn" data-value="ロザ">ロザ</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>その他要望</label>
+            <textarea id="otherRequests"></textarea>
+        </div>
 
         <button type="submit">送信</button>
     </div>
