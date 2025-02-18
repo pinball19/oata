@@ -144,9 +144,9 @@
           <!-- 第1希望 -->
           <tr>
             <th>第1希望</th>
-            <td>${currentData.firstChoice || "-"}</td>
             <td>${currentData.trainName || "-"}</td>
             <td>${currentData.departure || "-"}</td>
+            <td>${currentData.arrival || "-"}</td>
             <td>${currentData.numberOfAdults || "-"}</td>
             <td>${currentData.numberOfChildren || "-"}</td>
             <td>${currentData.numberOfAttendants || "-"}</td>
@@ -155,9 +155,9 @@
           <!-- 第2希望 -->
           <tr>
             <th>第2希望</th>
-            <td>${currentData.secondChoice || "-"}</td>
             <td>${currentData.secondTrainName || "-"}</td>
             <td>${currentData.secondDeparture || "-"}</td>
+            <td>${currentData.secondArrival || "-"}</td>
             <td>${currentData.secondNumberOfAdults || "-"}</td>
             <td>${currentData.secondNumberOfChildren || "-"}</td>
             <td>${currentData.secondNumberOfAttendants || "-"}</td>
@@ -169,7 +169,11 @@
 
       // 更新日時
       html += `
-        <p>最終更新: ${currentData.last_updated ? currentData.last_updated.toDate().toLocaleString() : "-"}</p>
+        <p>最終更新: ${
+          currentData.last_updated
+            ? currentData.last_updated.toDate().toLocaleString()
+            : "-"
+        }</p>
       `;
 
       // 画像があれば表示
@@ -214,9 +218,9 @@
               <!-- 第1希望 -->
               <tr>
                 <th>第1希望</th>
-                <td><input type="text" id="edit_firstChoice" value="${currentData.firstChoice || ''}"></td>
                 <td><input type="text" id="edit_trainName" value="${currentData.trainName || ''}"></td>
                 <td><input type="text" id="edit_departure" value="${currentData.departure || ''}"></td>
+                <td><input type="text" id="edit_arrival" value="${currentData.arrival || ''}"></td>
                 <td><input type="number" id="edit_numberOfAdults" value="${currentData.numberOfAdults || ''}"></td>
                 <td><input type="number" id="edit_numberOfChildren" value="${currentData.numberOfChildren || ''}"></td>
                 <td><input type="number" id="edit_numberOfAttendants" value="${currentData.numberOfAttendants || ''}"></td>
@@ -225,9 +229,9 @@
               <!-- 第2希望 -->
               <tr>
                 <th>第2希望</th>
-                <td><input type="text" id="edit_secondChoice" value="${currentData.secondChoice || ''}"></td>
                 <td><input type="text" id="edit_secondTrainName" value="${currentData.secondTrainName || ''}"></td>
                 <td><input type="text" id="edit_secondDeparture" value="${currentData.secondDeparture || ''}"></td>
+                <td><input type="text" id="edit_secondArrival" value="${currentData.secondArrival || ''}"></td>
                 <td><input type="number" id="edit_secondNumberOfAdults" value="${currentData.secondNumberOfAdults || ''}"></td>
                 <td><input type="number" id="edit_secondNumberOfChildren" value="${currentData.secondNumberOfChildren || ''}"></td>
                 <td><input type="number" id="edit_secondNumberOfAttendants" value="${currentData.secondNumberOfAttendants || ''}"></td>
@@ -263,18 +267,18 @@
       const newArrivalDate = document.getElementById("edit_arrivalDate").value;
 
       // 第1希望
-      const newFirstChoice = document.getElementById("edit_firstChoice").value.trim();
       const newTrainName = document.getElementById("edit_trainName").value.trim();
       const newDeparture = document.getElementById("edit_departure").value.trim();
+      const newArrival = document.getElementById("edit_arrival").value.trim();
       const newNumberOfAdults = document.getElementById("edit_numberOfAdults").value.trim();
       const newNumberOfChildren = document.getElementById("edit_numberOfChildren").value.trim();
       const newNumberOfAttendants = document.getElementById("edit_numberOfAttendants").value.trim();
       const newSeatType = document.getElementById("edit_seatType").value.trim();
 
       // 第2希望
-      const newSecondChoice = document.getElementById("edit_secondChoice").value.trim();
       const newSecondTrainName = document.getElementById("edit_secondTrainName").value.trim();
       const newSecondDeparture = document.getElementById("edit_secondDeparture").value.trim();
+      const newSecondArrival = document.getElementById("edit_secondArrival").value.trim();
       const newSecondNumberOfAdults = document.getElementById("edit_secondNumberOfAdults").value.trim();
       const newSecondNumberOfChildren = document.getElementById("edit_secondNumberOfChildren").value.trim();
       const newSecondNumberOfAttendants = document.getElementById("edit_secondNumberOfAttendants").value.trim();
@@ -282,6 +286,7 @@
 
       // 更新データオブジェクト
       const updatedData = {
+        // 上部情報
         groupName: newGroupName,
         groupNameFurigana: newGroupNameFurigana,
         groupType: newGroupType,
@@ -289,18 +294,18 @@
         arrivalDate: newArrivalDate,
 
         // 第1希望
-        firstChoice: newFirstChoice,
         trainName: newTrainName,
         departure: newDeparture,
+        arrival: newArrival,
         numberOfAdults: newNumberOfAdults,
         numberOfChildren: newNumberOfChildren,
         numberOfAttendants: newNumberOfAttendants,
         seatType: newSeatType,
 
-        // 第2希望 (新規)
-        secondChoice: newSecondChoice,
+        // 第2希望
         secondTrainName: newSecondTrainName,
         secondDeparture: newSecondDeparture,
+        secondArrival: newSecondArrival,
         secondNumberOfAdults: newSecondNumberOfAdults,
         secondNumberOfChildren: newSecondNumberOfChildren,
         secondNumberOfAttendants: newSecondNumberOfAttendants,
@@ -311,6 +316,7 @@
 
       // 変更された項目リスト（編集コメント用）
       let changes = [];
+      // 上部情報
       if (newGroupName !== currentData.groupName) changes.push(`団体名: ${newGroupName}`);
       if (newGroupNameFurigana !== currentData.groupNameFurigana) changes.push(`団体名ふりがな: ${newGroupNameFurigana}`);
       if (newGroupType !== currentData.groupType) changes.push(`団体種別: ${newGroupType}`);
@@ -318,22 +324,22 @@
       if (newArrivalDate !== currentData.arrivalDate) changes.push(`帰着日: ${newArrivalDate}`);
 
       // 第1希望
-      if (newFirstChoice !== currentData.firstChoice) changes.push(`第1希望(列車名): ${newFirstChoice}`);
       if (newTrainName !== currentData.trainName) changes.push(`列車名: ${newTrainName}`);
       if (newDeparture !== currentData.departure) changes.push(`発地: ${newDeparture}`);
+      if (newArrival !== currentData.arrival) changes.push(`着地: ${newArrival}`);
       if (newNumberOfAdults !== currentData.numberOfAdults) changes.push(`大人: ${newNumberOfAdults}`);
       if (newNumberOfChildren !== currentData.numberOfChildren) changes.push(`小児: ${newNumberOfChildren}`);
       if (newNumberOfAttendants !== currentData.numberOfAttendants) changes.push(`添乗員: ${newNumberOfAttendants}`);
       if (newSeatType !== currentData.seatType) changes.push(`座席: ${newSeatType}`);
 
       // 第2希望
-      if (newSecondChoice !== currentData.secondChoice) changes.push(`第2希望(列車名): ${newSecondChoice}`);
-      if (newSecondTrainName !== currentData.secondTrainName) changes.push(`列車名: ${newSecondTrainName}`);
-      if (newSecondDeparture !== currentData.secondDeparture) changes.push(`発地: ${newSecondDeparture}`);
-      if (newSecondNumberOfAdults !== currentData.secondNumberOfAdults) changes.push(`大人(第2希望): ${newSecondNumberOfAdults}`);
-      if (newSecondNumberOfChildren !== currentData.secondNumberOfChildren) changes.push(`小児(第2希望): ${newSecondNumberOfChildren}`);
-      if (newSecondNumberOfAttendants !== currentData.secondNumberOfAttendants) changes.push(`添乗員(第2希望): ${newSecondNumberOfAttendants}`);
-      if (newSecondSeatType !== currentData.secondSeatType) changes.push(`座席(第2希望): ${newSecondSeatType}`);
+      if (newSecondTrainName !== currentData.secondTrainName) changes.push(`第2希望-列車名: ${newSecondTrainName}`);
+      if (newSecondDeparture !== currentData.secondDeparture) changes.push(`第2希望-発地: ${newSecondDeparture}`);
+      if (newSecondArrival !== currentData.secondArrival) changes.push(`第2希望-着地: ${newSecondArrival}`);
+      if (newSecondNumberOfAdults !== currentData.secondNumberOfAdults) changes.push(`第2希望-大人: ${newSecondNumberOfAdults}`);
+      if (newSecondNumberOfChildren !== currentData.secondNumberOfChildren) changes.push(`第2希望-小児: ${newSecondNumberOfChildren}`);
+      if (newSecondNumberOfAttendants !== currentData.secondNumberOfAttendants) changes.push(`第2希望-添乗員: ${newSecondNumberOfAttendants}`);
+      if (newSecondSeatType !== currentData.secondSeatType) changes.push(`第2希望-座席: ${newSecondSeatType}`);
 
       // 画像がアップロードされた場合のみStorageにアップロード
       const fileInput = document.getElementById("imageUpload");
