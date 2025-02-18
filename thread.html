@@ -40,7 +40,7 @@
       apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
       authDomain: "oata-8c05b.firebaseapp.com",
       projectId: "oata-8c05b",
-      storageBucket: "oata-8c05b.firebasestorage.app",  // ← 必要に応じてご自身のStorageバケット名に合わせてください
+      storageBucket: "oata-8c05b.firebasestorage.app",  // 必要に応じてご自身のStorageバケット名に合わせてください
       messagingSenderId: "949261471175",
       appId: "1:949261471175:web:28482b939262d8e93f1de2",
       measurementId: "G-02LMR8FTNX"
@@ -100,17 +100,21 @@
 
     function renderCaseDetails() {
       const detailsDiv = document.getElementById("caseDetails");
-      // 案件データをHTMLに反映
+      // 新しい案件データをHTMLに反映
       let html = `
-        <h2>${currentData.caseTitle}</h2>
-        <p>出発地: ${currentData.departure}</p>
+        <h2>${currentData.groupName || "-"}</h2>
+        <p>団体名ふりがな: ${currentData.groupNameFurigana || "-"}</p>
+        <p>団体種別: ${currentData.groupType || "-"}</p>
         <p>出発日: ${currentData.departureDate || "-"}</p>
-        <p>帰着地: ${currentData.arrival}</p>
         <p>帰着日: ${currentData.arrivalDate || "-"}</p>
-        <p>マル契種類: ${currentData.contractType}</p>
-        <p>金額（予定）: ${currentData.estimatedPrice || "-"}</p>
-        <p>金額（確定）: ${currentData.confirmedPrice || "-"}</p>
-        <p>備考: ${currentData.remarks || "-"}</p>
+        <p>第１希望: ${currentData.firstChoice || "-"}</p>
+        <p>列車名: ${currentData.trainName || "-"}</p>
+        <p>発地: ${currentData.departure || "-"}</p>
+        <p>着地: ${currentData.arrival || "-"}</p>
+        <p>大人の数: ${currentData.numberOfAdults || "-"}</p>
+        <p>小児の数: ${currentData.numberOfChildren || "-"}</p>
+        <p>添乗員の数: ${currentData.numberOfAttendants || "-"}</p>
+        <p>座席種別: ${currentData.seatType || "-"}</p>
         <p>作成日時: ${currentData.last_updated ? currentData.last_updated.toDate().toLocaleString() : "-"}</p>
       `;
 
@@ -133,16 +137,20 @@
       if (!editing) {
         // 編集フォーム表示
         detailsDiv.innerHTML = `
-          <h2><input type="text" id="edit_caseTitle" value="${currentData.caseTitle || ''}"></h2>
-          <p>出発地: <input type="text" id="edit_departure" value="${currentData.departure || ''}"></p>
+          <h2><input type="text" id="edit_groupName" value="${currentData.groupName || ''}"></h2>
+          <p>団体名ふりがな: <input type="text" id="edit_groupNameFurigana" value="${currentData.groupNameFurigana || ''}"></p>
+          <p>団体種別: <input type="text" id="edit_groupType" value="${currentData.groupType || ''}"></p>
           <p>出発日: <input type="date" id="edit_departureDate" value="${currentData.departureDate || ''}"></p>
-          <p>帰着地: <input type="text" id="edit_arrival" value="${currentData.arrival || ''}"></p>
           <p>帰着日: <input type="date" id="edit_arrivalDate" value="${currentData.arrivalDate || ''}"></p>
-          <p>マル契種類: <input type="text" id="edit_contractType" value="${currentData.contractType || ''}"></p>
-          <p>金額（予定）: <input type="number" id="edit_estimatedPrice" value="${currentData.estimatedPrice || ''}"></p>
-          <p>金額（確定）: <input type="number" id="edit_confirmedPrice" value="${currentData.confirmedPrice || ''}"></p>
-          <p>備考: <textarea id="edit_remarks">${currentData.remarks || ''}</textarea></p>
-
+          <p>第１希望: <input type="text" id="edit_firstChoice" value="${currentData.firstChoice || ''}"></p>
+          <p>列車名: <input type="text" id="edit_trainName" value="${currentData.trainName || ''}"></p>
+          <p>発地: <input type="text" id="edit_departure" value="${currentData.departure || ''}"></p>
+          <p>着地: <input type="text" id="edit_arrival" value="${currentData.arrival || ''}"></p>
+          <p>大人の数: <input type="number" id="edit_numberOfAdults" value="${currentData.numberOfAdults || ''}"></p>
+          <p>小児の数: <input type="number" id="edit_numberOfChildren" value="${currentData.numberOfChildren || ''}"></p>
+          <p>添乗員の数: <input type="number" id="edit_numberOfAttendants" value="${currentData.numberOfAttendants || ''}"></p>
+          <p>座席種別: <input type="text" id="edit_seatType" value="${currentData.seatType || ''}"></p>
+          
           <!-- 画像アップロード用のinputを追加 -->
           <p>添付画像（1枚のみ）: <input type="file" id="imageUpload" accept="image/*"></p>
 
@@ -162,42 +170,54 @@
       // ★ 保存前にスピナーを表示
       document.getElementById("spinner").style.display = "block";
 
-      // 既存項目の取得
-      const newCaseTitle = document.getElementById("edit_caseTitle").value.trim();
-      const newDeparture = document.getElementById("edit_departure").value.trim();
+      // 新しい項目の取得
+      const newGroupName = document.getElementById("edit_groupName").value.trim();
+      const newGroupNameFurigana = document.getElementById("edit_groupNameFurigana").value.trim();
+      const newGroupType = document.getElementById("edit_groupType").value.trim();
       const newDepartureDate = document.getElementById("edit_departureDate").value;
-      const newArrival = document.getElementById("edit_arrival").value.trim();
       const newArrivalDate = document.getElementById("edit_arrivalDate").value;
-      const newContractType = document.getElementById("edit_contractType").value.trim();
-      const newEstimatedPrice = document.getElementById("edit_estimatedPrice").value.trim();
-      const newConfirmedPrice = document.getElementById("edit_confirmedPrice").value.trim();
-      const newRemarks = document.getElementById("edit_remarks").value.trim();
+      const newFirstChoice = document.getElementById("edit_firstChoice").value.trim();
+      const newTrainName = document.getElementById("edit_trainName").value.trim();
+      const newDeparture = document.getElementById("edit_departure").value.trim();
+      const newArrival = document.getElementById("edit_arrival").value.trim();
+      const newNumberOfAdults = document.getElementById("edit_numberOfAdults").value.trim();
+      const newNumberOfChildren = document.getElementById("edit_numberOfChildren").value.trim();
+      const newNumberOfAttendants = document.getElementById("edit_numberOfAttendants").value.trim();
+      const newSeatType = document.getElementById("edit_seatType").value.trim();
 
       // 更新データオブジェクト
       const updatedData = {
-        caseTitle: newCaseTitle,
-        departure: newDeparture,
+        groupName: newGroupName,
+        groupNameFurigana: newGroupNameFurigana,
+        groupType: newGroupType,
         departureDate: newDepartureDate,
-        arrival: newArrival,
         arrivalDate: newArrivalDate,
-        contractType: newContractType,
-        estimatedPrice: newEstimatedPrice,
-        confirmedPrice: newConfirmedPrice,
-        remarks: newRemarks,
+        firstChoice: newFirstChoice,
+        trainName: newTrainName,
+        departure: newDeparture,
+        arrival: newArrival,
+        numberOfAdults: newNumberOfAdults,
+        numberOfChildren: newNumberOfChildren,
+        numberOfAttendants: newNumberOfAttendants,
+        seatType: newSeatType,
         last_updated: firebase.firestore.FieldValue.serverTimestamp()
       };
 
       // 変更された項目リスト（編集コメント用）
       let changes = [];
-      if (newCaseTitle !== currentData.caseTitle) changes.push(`案件名: ${newCaseTitle}`);
-      if (newDeparture !== currentData.departure) changes.push(`出発地: ${newDeparture}`);
+      if (newGroupName !== currentData.groupName) changes.push(`団体名: ${newGroupName}`);
+      if (newGroupNameFurigana !== currentData.groupNameFurigana) changes.push(`団体名ふりがな: ${newGroupNameFurigana}`);
+      if (newGroupType !== currentData.groupType) changes.push(`団体種別: ${newGroupType}`);
       if (newDepartureDate !== currentData.departureDate) changes.push(`出発日: ${newDepartureDate}`);
-      if (newArrival !== currentData.arrival) changes.push(`帰着地: ${newArrival}`);
       if (newArrivalDate !== currentData.arrivalDate) changes.push(`帰着日: ${newArrivalDate}`);
-      if (newContractType !== currentData.contractType) changes.push(`マル契種類: ${newContractType}`);
-      if (newEstimatedPrice !== currentData.estimatedPrice) changes.push(`金額（予定）: ${newEstimatedPrice}`);
-      if (newConfirmedPrice !== currentData.confirmedPrice) changes.push(`金額（確定）: ${newConfirmedPrice}`);
-      if (newRemarks !== currentData.remarks) changes.push(`備考: ${newRemarks}`);
+      if (newFirstChoice !== currentData.firstChoice) changes.push(`第１希望: ${newFirstChoice}`);
+      if (newTrainName !== currentData.trainName) changes.push(`列車名: ${newTrainName}`);
+      if (newDeparture !== currentData.departure) changes.push(`発地: ${newDeparture}`);
+      if (newArrival !== currentData.arrival) changes.push(`着地: ${newArrival}`);
+      if (newNumberOfAdults !== currentData.numberOfAdults) changes.push(`大人の数: ${newNumberOfAdults}`);
+      if (newNumberOfChildren !== currentData.numberOfChildren) changes.push(`小児の数: ${newNumberOfChildren}`);
+      if (newNumberOfAttendants !== currentData.numberOfAttendants) changes.push(`添乗員の数: ${newNumberOfAttendants}`);
+      if (newSeatType !== currentData.seatType) changes.push(`座席種別: ${newSeatType}`);
 
       // 画像がアップロードされた場合のみStorageにアップロード
       const fileInput = document.getElementById("imageUpload");
