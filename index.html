@@ -22,12 +22,13 @@
         <label>担当</label>
         <input type="text" id="contactPerson">
 
+        <!-- 🔹 「マル販（ロット）、一般、学生」の選択ボタン -->
         <label>マル販</label>
-        <select id="ticketType">
-            <option value="ロット">ロット</option>
-            <option value="一般">一般</option>
-            <option value="学生">学生</option>
-        </select>
+        <div class="option-group" id="ticketType">
+            <button class="option-btn" data-value="ロット">ロット</button>
+            <button class="option-btn" data-value="一般">一般</button>
+            <button class="option-btn" data-value="学生">学生</button>
+        </div>
 
         <label>旅行出発日</label>
         <input type="date" id="departureDate">
@@ -56,69 +57,12 @@
             <label>添乗員の数</label>
             <input type="number" class="guides">
 
+            <!-- 🔹 「座席（ハザ・ロザ）」の選択ボタン -->
             <label>座席</label>
-            <select class="seatType">
-                <option value="ハザ">ハザ</option>
-                <option value="ロザ">ロザ</option>
-            </select>
-        </div>
-
-        <!-- 第2希望（入力する場合のみ表示）-->
-        <button id="addSecondOption">第2希望を追加</button>
-        <div class="request-group hidden" id="secondOption">
-            <h3>第2希望</h3>
-            <label>列車名</label>
-            <input type="text" class="trainName">
-
-            <label>発地</label>
-            <input type="text" class="departure">
-
-            <label>着地</label>
-            <input type="text" class="arrival">
-
-            <label>大人の数</label>
-            <input type="number" class="adults">
-
-            <label>小児の数</label>
-            <input type="number" class="children">
-
-            <label>添乗員の数</label>
-            <input type="number" class="guides">
-
-            <label>座席</label>
-            <select class="seatType">
-                <option value="ハザ">ハザ</option>
-                <option value="ロザ">ロザ</option>
-            </select>
-        </div>
-
-        <!-- 第3希望（入力する場合のみ表示）-->
-        <button id="addThirdOption">第3希望を追加</button>
-        <div class="request-group hidden" id="thirdOption">
-            <h3>第3希望</h3>
-            <label>列車名</label>
-            <input type="text" class="trainName">
-
-            <label>発地</label>
-            <input type="text" class="departure">
-
-            <label>着地</label>
-            <input type="text" class="arrival">
-
-            <label>大人の数</label>
-            <input type="number" class="adults">
-
-            <label>小児の数</label>
-            <input type="number" class="children">
-
-            <label>添乗員の数</label>
-            <input type="number" class="guides">
-
-            <label>座席</label>
-            <select class="seatType">
-                <option value="ハザ">ハザ</option>
-                <option value="ロザ">ロザ</option>
-            </select>
+            <div class="option-group seat-group">
+                <button class="seat-btn" data-value="ハザ">ハザ</button>
+                <button class="seat-btn" data-value="ロザ">ロザ</button>
+            </div>
         </div>
 
         <label>その他要望</label>
