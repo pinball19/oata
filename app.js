@@ -1,14 +1,16 @@
 // Firebase SDK を読み込む
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import Handsontable from "https://cdn.jsdelivr.net/npm/handsontable@12.1.0/dist/handsontable.full.min.mjs";
 
-// 🔹 Firebaseの設定（修正済み）
+// Handsontableを正しいURLからインポート
+import Handsontable from "https://cdn.jsdelivr.net/npm/handsontable@12.1.0/dist/handsontable.full.min.js";
+
+// 🔹 Firebaseの設定
 const firebaseConfig = {
   apiKey: "AIzaSyBYtkWuK0sbCYyQcVhLeFWCPhU7GhMG8pg",
   authDomain: "exceldisplay-505fc.firebaseapp.com",
   projectId: "exceldisplay-505fc",
-  storageBucket: "exceldisplay-505fc.appspot.com", // ✅ 修正
+  storageBucket: "exceldisplay-505fc.appspot.com",
   messagingSenderId: "491087347583",
   appId: "1:491087347583:web:64f812b63ad8b6ac0be44a",
   measurementId: "G-D5H647GG6L"
@@ -40,7 +42,7 @@ async function loadData() {
     }
 }
 
-// 🔹 Firestoreのリアルタイムリスナー（他のユーザーの変更も即反映）
+// 🔹 Firestoreのリアルタイムリスナー
 onSnapshot(doc(db, "tables", "sheet1"), (docSnap) => {
     if (docSnap.exists() && hot) {
         console.log("Firestore の変更を検出、データ更新:", docSnap.data().tableData);
@@ -50,7 +52,7 @@ onSnapshot(doc(db, "tables", "sheet1"), (docSnap) => {
 
 // 🔹 Handsontableを初期化（データをFirestoreから取得）
 loadData().then((data) => {
-    console.log("取得データ:", data); // ✅ デバッグ用ログ
+    console.log("取得データ:", data);
     if (!data) {
         console.error("データが取得できませんでした！");
         return;
