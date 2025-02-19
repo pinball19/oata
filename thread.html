@@ -43,6 +43,29 @@
     th {
       background: #f9f9f9;
     }
+
+    /* モーダル表示用スタイル */
+    #imageModal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    #imageModal img {
+      display: block;
+      margin: auto;
+      max-width: 90%;
+      max-height: 90%;
+      margin-top: 5%;
+      cursor: pointer;
+    }
   </style>
 
   <script>
@@ -50,15 +73,15 @@
     emailjs.init("xFGCcZ9228W3baa9y");
 
     // Firebase 初期化
-const firebaseConfig = {
-  apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
-  authDomain: "oata-8c05b.firebaseapp.com",
-  projectId: "oata-8c05b",
-  storageBucket: "oata-8c05b.firebasestorage.app",
-  messagingSenderId: "949261471175",
-  appId: "1:949261471175:web:28482b939262d8e93f1de2",
-  measurementId: "G-02LMR8FTNX"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
+      authDomain: "oata-8c05b.firebaseapp.com",
+      projectId: "oata-8c05b",
+      storageBucket: "oata-8c05b.firebasestorage.app",
+      messagingSenderId: "949261471175",
+      appId: "1:949261471175:web:28482b939262d8e93f1de2",
+      measurementId: "G-02LMR8FTNX"
+    };
     firebase.initializeApp(firebaseConfig);
   </script>
 </head>
@@ -81,6 +104,11 @@ const firebaseConfig = {
   <h3>新しいコメントを投稿</h3>
   <textarea id="newComment" placeholder="コメントを入力"></textarea><br>
   <button onclick="submitComment()">コメントを投稿</button>
+
+  <!-- モーダル用のHTML -->
+  <div id="imageModal" onclick="this.style.display='none'">
+    <img id="modalImage" src="" alt="大きな画像">
+  </div>
 
   <script>
     const db = firebase.firestore();
@@ -187,7 +215,7 @@ const firebaseConfig = {
         html += `
           <div>
             <p>添付画像:</p>
-            <img src="${currentData.imageUrl}" alt="添付画像" style="max-width: 200px; max-height: 200px;">
+            <img src="${currentData.imageUrl}" alt="添付画像" style="max-width: 200px; max-height: 200px; cursor:pointer;" onclick="showImageModal('${currentData.imageUrl}')">
           </div>
         `;
       }
@@ -460,14 +488,22 @@ const firebaseConfig = {
     //  function sendEmailNotification(comment) {
     //    emailjs.send("service_yk6nvsg", "template_3xbq589", {
     //      to_email: "yoshiaki.murata20@gmail.com",
-     //     message: `新しいコメントが投稿されました: ${comment}`
-     //   })
-     //   .then(response => console.log("メール通知成功:", response))
-     //   .catch(error => console.error("メール送信エラー:", error));
+    //      message: `新しいコメントが投稿されました: ${comment}`
+    //    })
+    //    .then(response => console.log("メール通知成功:", response))
+    //    .catch(error => console.error("メール送信エラー:", error));
     //  }
 
     function goToDashboard() {
       window.location.href = "dashboard.html?company=" + companyId;
+    }
+
+    // 画像クリックでモーダル表示
+    function showImageModal(imageUrl) {
+      const modal = document.getElementById("imageModal");
+      const modalImg = document.getElementById("modalImage");
+      modalImg.src = imageUrl;
+      modal.style.display = "flex";
     }
 
     loadCaseDetails();
