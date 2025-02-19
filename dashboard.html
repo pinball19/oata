@@ -38,6 +38,19 @@
       margin-bottom: 1em;
       border-radius: 5px;
     }
+    table {
+      border-collapse: collapse;
+      margin-top: 0.5em;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.3em;
+      text-align: center;
+    }
+    th {
+      background: #f9f9f9;
+      min-width: 80px;
+    }
   </style>
 
   <script>
@@ -67,10 +80,49 @@
     <!-- 新しい案件作成フォーム -->
     <div id="newCaseForm" style="display: none;">
       <h2>案件情報を入力</h2>
+
+      <!-- 既存フィールドは残しつつ、団体情報+第1～第3希望も追加 -->
+
+      <!-- 団体情報 -->
+      <label>団体名: <input type="text" id="groupName"></label><br>
+      <label>団体名ふりがな: <input type="text" id="groupNameFurigana"></label><br>
+      <label>団体種別: <input type="text" id="groupType"></label><br>
+
+      <!-- 第1希望 -->
+      <h3>第1希望</h3>
+      <label>列車名: <input type="text" id="trainName"></label><br>
+      <label>発地: <input type="text" id="departure"></label><br>
+      <label>着地: <input type="text" id="arrival"></label><br>
+      <label>大人: <input type="number" id="numberOfAdults"></label><br>
+      <label>小児: <input type="number" id="numberOfChildren"></label><br>
+      <label>添乗員: <input type="number" id="numberOfAttendants"></label><br>
+      <label>座席: <input type="text" id="seatType"></label><br>
+
+      <!-- 第2希望 -->
+      <h3>第2希望</h3>
+      <label>列車名: <input type="text" id="secondTrainName"></label><br>
+      <label>発地: <input type="text" id="secondDeparture"></label><br>
+      <label>着地: <input type="text" id="secondArrival"></label><br>
+      <label>大人: <input type="number" id="secondNumberOfAdults"></label><br>
+      <label>小児: <input type="number" id="secondNumberOfChildren"></label><br>
+      <label>添乗員: <input type="number" id="secondNumberOfAttendants"></label><br>
+      <label>座席: <input type="text" id="secondSeatType"></label><br>
+
+      <!-- 第3希望 -->
+      <h3>第3希望</h3>
+      <label>列車名: <input type="text" id="thirdTrainName"></label><br>
+      <label>発地: <input type="text" id="thirdDeparture"></label><br>
+      <label>着地: <input type="text" id="thirdArrival"></label><br>
+      <label>大人: <input type="number" id="thirdNumberOfAdults"></label><br>
+      <label>小児: <input type="number" id="thirdNumberOfChildren"></label><br>
+      <label>添乗員: <input type="number" id="thirdNumberOfAttendants"></label><br>
+      <label>座席: <input type="text" id="thirdSeatType"></label><br>
+
+      <!-- 既存フィールド（案件名やマル契種類など）-->
+      <hr>
+      <h3>基本情報</h3>
       <label>案件名: <input type="text" id="caseTitle"></label><br>
-      <label>出発地: <input type="text" id="departure"></label><br>
       <label>出発日: <input type="date" id="departureDate"></label><br>
-      <label>帰着地: <input type="text" id="arrival"></label><br>
       <label>帰着日: <input type="date" id="arrivalDate"></label><br>
       <label>マル契種類: <input type="text" id="contractType"></label><br>
       <label>金額（予定）: <input type="number" id="estimatedPrice"></label><br>
@@ -103,24 +155,53 @@
     }
     document.getElementById("welcomeMsg").innerText = "ようこそ、" + companyId + " 様";
 
-    // フォーム表示
+    // フォームを表示
     function showForm() {
       document.getElementById("newCaseForm").style.display = "block";
     }
 
-    // キャンセルボタン用：フォームを非表示＆入力欄リセット
+    // キャンセルボタン：フォームを非表示＆リセット
     function cancelNewCase() {
       document.getElementById("newCaseForm").style.display = "none";
-      document.getElementById("caseTitle").value = "";
+
+      // 追加した項目も含め、全てリセット
+      document.getElementById("groupName").value = "";
+      document.getElementById("groupNameFurigana").value = "";
+      document.getElementById("groupType").value = "";
+
+      document.getElementById("trainName").value = "";
       document.getElementById("departure").value = "";
-      document.getElementById("departureDate").value = "";
       document.getElementById("arrival").value = "";
+      document.getElementById("numberOfAdults").value = "";
+      document.getElementById("numberOfChildren").value = "";
+      document.getElementById("numberOfAttendants").value = "";
+      document.getElementById("seatType").value = "";
+
+      document.getElementById("secondTrainName").value = "";
+      document.getElementById("secondDeparture").value = "";
+      document.getElementById("secondArrival").value = "";
+      document.getElementById("secondNumberOfAdults").value = "";
+      document.getElementById("secondNumberOfChildren").value = "";
+      document.getElementById("secondNumberOfAttendants").value = "";
+      document.getElementById("secondSeatType").value = "";
+
+      document.getElementById("thirdTrainName").value = "";
+      document.getElementById("thirdDeparture").value = "";
+      document.getElementById("thirdArrival").value = "";
+      document.getElementById("thirdNumberOfAdults").value = "";
+      document.getElementById("thirdNumberOfChildren").value = "";
+      document.getElementById("thirdNumberOfAttendants").value = "";
+      document.getElementById("thirdSeatType").value = "";
+
+      document.getElementById("caseTitle").value = "";
+      document.getElementById("departureDate").value = "";
       document.getElementById("arrivalDate").value = "";
       document.getElementById("contractType").value = "";
       document.getElementById("estimatedPrice").value = "";
       document.getElementById("confirmedPrice").value = "";
       document.getElementById("remarks").value = "";
       document.getElementById("caseImage").value = "";
+      
       // スピナー非表示
       document.getElementById("spinner").style.display = "none";
     }
@@ -132,10 +213,38 @@
       spinner.style.display = "block";
 
       try {
-        const caseTitle = document.getElementById("caseTitle").value.trim();
+        // 追加した入力欄の値を取得
+        const groupName = document.getElementById("groupName").value.trim();
+        const groupNameFurigana = document.getElementById("groupNameFurigana").value.trim();
+        const groupType = document.getElementById("groupType").value.trim();
+
+        const trainName = document.getElementById("trainName").value.trim();
         const departure = document.getElementById("departure").value.trim();
-        const departureDate = document.getElementById("departureDate").value;
         const arrival = document.getElementById("arrival").value.trim();
+        const numberOfAdults = document.getElementById("numberOfAdults").value.trim();
+        const numberOfChildren = document.getElementById("numberOfChildren").value.trim();
+        const numberOfAttendants = document.getElementById("numberOfAttendants").value.trim();
+        const seatType = document.getElementById("seatType").value.trim();
+
+        const secondTrainName = document.getElementById("secondTrainName").value.trim();
+        const secondDeparture = document.getElementById("secondDeparture").value.trim();
+        const secondArrival = document.getElementById("secondArrival").value.trim();
+        const secondNumberOfAdults = document.getElementById("secondNumberOfAdults").value.trim();
+        const secondNumberOfChildren = document.getElementById("secondNumberOfChildren").value.trim();
+        const secondNumberOfAttendants = document.getElementById("secondNumberOfAttendants").value.trim();
+        const secondSeatType = document.getElementById("secondSeatType").value.trim();
+
+        const thirdTrainName = document.getElementById("thirdTrainName").value.trim();
+        const thirdDeparture = document.getElementById("thirdDeparture").value.trim();
+        const thirdArrival = document.getElementById("thirdArrival").value.trim();
+        const thirdNumberOfAdults = document.getElementById("thirdNumberOfAdults").value.trim();
+        const thirdNumberOfChildren = document.getElementById("thirdNumberOfChildren").value.trim();
+        const thirdNumberOfAttendants = document.getElementById("thirdNumberOfAttendants").value.trim();
+        const thirdSeatType = document.getElementById("thirdSeatType").value.trim();
+
+        // 既存フィールド
+        const caseTitle = document.getElementById("caseTitle").value.trim();
+        const departureDate = document.getElementById("departureDate").value;
         const arrivalDate = document.getElementById("arrivalDate").value;
         const contractType = document.getElementById("contractType").value.trim();
         const estimatedPrice = document.getElementById("estimatedPrice").value.trim();
@@ -143,9 +252,9 @@
         const remarks = document.getElementById("remarks").value.trim();
         const caseImageFile = document.getElementById("caseImage").files[0];
 
-        // 必須項目チェック（必要に応じて調整）
-        if (!caseTitle || !departure || !arrival || !contractType) {
-          alert("案件名、出発地、帰着地、マル契種類は必須項目です");
+        // 必須項目チェック（必要に応じて調整してください）
+        if (!groupName || !trainName || !departure || !arrival) {
+          alert("団体名と第1希望（列車名・発地・着地）は必須項目です");
           spinner.style.display = "none";
           return;
         }
@@ -164,11 +273,41 @@
 
         // Firestoreに追加
         await db.collection("companies").doc(companyId).collection("threads").add({
-          // ここは既存フィールドのまま
-          caseTitle: caseTitle,
+          // 追加した団体情報
+          groupName: groupName,
+          groupNameFurigana: groupNameFurigana,
+          groupType: groupType,
+
+          // 第1希望
+          trainName: trainName,
           departure: departure,
-          departureDate: departureDate,
           arrival: arrival,
+          numberOfAdults: numberOfAdults,
+          numberOfChildren: numberOfChildren,
+          numberOfAttendants: numberOfAttendants,
+          seatType: seatType,
+
+          // 第2希望
+          secondTrainName: secondTrainName,
+          secondDeparture: secondDeparture,
+          secondArrival: secondArrival,
+          secondNumberOfAdults: secondNumberOfAdults,
+          secondNumberOfChildren: secondNumberOfChildren,
+          secondNumberOfAttendants: secondNumberOfAttendants,
+          secondSeatType: secondSeatType,
+
+          // 第3希望
+          thirdTrainName: thirdTrainName,
+          thirdDeparture: thirdDeparture,
+          thirdArrival: thirdArrival,
+          thirdNumberOfAdults: thirdNumberOfAdults,
+          thirdNumberOfChildren: thirdNumberOfChildren,
+          thirdNumberOfAttendants: thirdNumberOfAttendants,
+          thirdSeatType: thirdSeatType,
+
+          // 既存フィールド
+          caseTitle: caseTitle,
+          departureDate: departureDate,
           arrivalDate: arrivalDate,
           contractType: contractType,
           estimatedPrice: estimatedPrice,
@@ -176,13 +315,6 @@
           remarks: remarks,
           imageUrl: imageUrl,
           last_updated: firebase.firestore.FieldValue.serverTimestamp()
-
-          // 新しい「第1希望～第3希望」「団体名」などは、
-          // もしダッシュボードの新規作成フォームでも入力するなら
-          // 下のように追加してFirestoreへ保存できます。
-          // groupName: ...,
-          // groupNameFurigana: ...,
-          // ...
         });
 
         alert("案件が作成されました！");
@@ -216,36 +348,81 @@
               ? caseData.last_updated.toDate().toLocaleString()
               : "";
 
-            // ★ ここを修正して、案件詳細ページに合わせた表示に変更
-            // 例：団体名、団体名ふりがな、団体種別をメインに表示
-            // ただし、既存フィールドも残すようにしています。
+            // 各案件をカード表示
+            let div = document.createElement("div");
+            div.className = "project-card";
+
+            // 団体名や団体種別など
             const groupName = caseData.groupName || caseData.caseTitle || "（未設定）";
             const groupNameFurigana = caseData.groupNameFurigana || "";
             const groupType = caseData.groupType || caseData.contractType || "";
-            const departureDate = caseData.departureDate || "-";
-            const arrivalDate = caseData.arrivalDate || "-";
             const remarks = caseData.remarks || "";
             const imageUrl = caseData.imageUrl || "";
-            // ほかに必要なフィールドがあれば適宜追加してください
 
-            let div = document.createElement("div");
-            div.className = "project-card";
+            // 表示用のHTMLを組み立て
+            // 第1～第3希望をサマリー表で表示します
+            const firstTrainName = caseData.trainName || "-";
+            const firstDeparture = caseData.departure || "-";
+            const firstArrival = caseData.arrival || "-";
+
+            const secondTrainName = caseData.secondTrainName || "-";
+            const secondDeparture = caseData.secondDeparture || "-";
+            const secondArrival = caseData.secondArrival || "-";
+
+            const thirdTrainName = caseData.thirdTrainName || "-";
+            const thirdDeparture = caseData.thirdDeparture || "-";
+            const thirdArrival = caseData.thirdArrival || "-";
+
+            // 大人・小児・添乗員・座席はここでは簡易的に省略してもよいですが、
+            // もし必要なら同様に表示してください。
+            // 例: const numAdults = caseData.numberOfAdults || 0; など
 
             div.innerHTML = `
               <h3>団体名: ${groupName}</h3>
               <p>団体名ふりがな: ${groupNameFurigana}</p>
               <p>団体種別: ${groupType}</p>
-              <p>出発日: ${departureDate}</p>
-              <p>帰着日: ${arrivalDate}</p>
               <p>備考: ${remarks}</p>
               <p>更新日時: ${updatedDate}</p>
-              ${
-                imageUrl
-                  ? `<div><img src="${imageUrl}" alt="画像" style="max-width: 200px; max-height: 200px;"></div>`
-                  : ""
+
+              ${ imageUrl
+                ? `<div><img src="${imageUrl}" alt="画像" style="max-width: 200px; max-height: 200px;"></div>`
+                : ""
               }
-              <!-- 詳細ページへのリンク -->
-              <a href="thread.html?company=${companyId}&thread=${caseId}">詳細を見る</a>
+
+              <!-- 第1～第3希望を小さな表で表示 -->
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>列車名</th>
+                    <th>発地</th>
+                    <th>着地</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th>第1希望</th>
+                    <td>${firstTrainName}</td>
+                    <td>${firstDeparture}</td>
+                    <td>${firstArrival}</td>
+                  </tr>
+                  <tr>
+                    <th>第2希望</th>
+                    <td>${secondTrainName}</td>
+                    <td>${secondDeparture}</td>
+                    <td>${secondArrival}</td>
+                  </tr>
+                  <tr>
+                    <th>第3希望</th>
+                    <td>${thirdTrainName}</td>
+                    <td>${thirdDeparture}</td>
+                    <td>${thirdArrival}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- 案件詳細ページへのリンク -->
+              <p><a href="thread.html?company=${companyId}&thread=${caseId}">詳細を見る</a></p>
             `;
 
             caseListDiv.appendChild(div);
@@ -261,24 +438,33 @@
           .orderBy("last_updated", "desc")
           .get();
 
-        let csvContent = "data:text/csv;charset=utf-8,案件名(団体名),団体名ふりがな,団体種別,出発日,帰着日,マル契種類,金額（予定）,金額（確定）,備考,最終更新\n";
+        let csvContent = "data:text/csv;charset=utf-8,団体名,団体名ふりがな,団体種別,第1希望(列車名),第1希望(発地),第1希望(着地),第2希望(列車名),第2希望(発地),第2希望(着地),第3希望(列車名),第3希望(発地),第3希望(着地),備考,最終更新\n";
+
         snapshot.forEach(doc => {
           const caseData = doc.data();
           const updatedDate = caseData.last_updated
             ? caseData.last_updated.toDate().toLocaleString()
             : "";
-          const groupName = caseData.groupName || caseData.caseTitle || "";
+
+          const groupName = caseData.groupName || "";
           const groupNameFurigana = caseData.groupNameFurigana || "";
-          const groupType = caseData.groupType || caseData.contractType || "";
-          const departureDate = caseData.departureDate || "";
-          const arrivalDate = caseData.arrivalDate || "";
-          const estimatedPrice = caseData.estimatedPrice || "";
-          const confirmedPrice = caseData.confirmedPrice || "";
+          const groupType = caseData.groupType || "";
+
+          const firstTrainName = caseData.trainName || "";
+          const firstDeparture = caseData.departure || "";
+          const firstArrival = caseData.arrival || "";
+
+          const secondTrainName = caseData.secondTrainName || "";
+          const secondDeparture = caseData.secondDeparture || "";
+          const secondArrival = caseData.secondArrival || "";
+
+          const thirdTrainName = caseData.thirdTrainName || "";
+          const thirdDeparture = caseData.thirdDeparture || "";
+          const thirdArrival = caseData.thirdArrival || "";
+
           const remarks = (caseData.remarks || "").replace(/\"/g, '""');
-          
-          // CSVの各フィールドにダブルクォートを付けると安全
-          csvContent += `"${groupName}","${groupNameFurigana}","${groupType}","${departureDate}","${arrivalDate}","${(caseData.contractType||"")}",
-            "${estimatedPrice}","${confirmedPrice}","${remarks}","${updatedDate}"\n`;
+
+          csvContent += `"${groupName}","${groupNameFurigana}","${groupType}","${firstTrainName}","${firstDeparture}","${firstArrival}","${secondTrainName}","${secondDeparture}","${secondArrival}","${thirdTrainName}","${thirdDeparture}","${thirdArrival}","${remarks}","${updatedDate}"\n`;
         });
 
         const encodedUri = encodeURI(csvContent);
