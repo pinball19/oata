@@ -16,9 +16,9 @@
   <style>
     /* スピナー本体 */
     #spinner {
-      display: none;               /* 初期は非表示 */
-      border: 8px solid #f3f3f3;   /* 薄いグレー */
-      border-top: 8px solid #3498db; /* 青 */
+      display: none;
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
       border-radius: 50%;
       width: 50px;
       height: 50px;
@@ -50,15 +50,15 @@
     emailjs.init("xFGCcZ9228W3baa9y");
 
     // Firebase 初期化
-    const firebaseConfig = {
-      apiKey: "AIzaSyDP...（ご自身のキー）",
-      authDomain: "oata-8c05b.firebaseapp.com",
-      projectId: "oata-8c05b",
-      storageBucket: "oata-8c05b.firebasestorage.app",  // 必要に応じてご自身のStorageバケット名に合わせてください
-      messagingSenderId: "949261471175",
-      appId: "1:949261471175:web:28482b939262d8e93f1de2",
-      measurementId: "G-02LMR8FTNX"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
+  authDomain: "oata-8c05b.firebaseapp.com",
+  projectId: "oata-8c05b",
+  storageBucket: "oata-8c05b.firebasestorage.app",
+  messagingSenderId: "949261471175",
+  appId: "1:949261471175:web:28482b939262d8e93f1de2",
+  measurementId: "G-02LMR8FTNX"
+};
     firebase.initializeApp(firebaseConfig);
   </script>
 </head>
@@ -88,6 +88,8 @@
     const params = new URLSearchParams(window.location.search);
     const companyId = params.get("company");
     const threadId = params.get("thread");
+    // role パラメータを取得（デフォルトは販売店）
+    const role = params.get("role") || "store";
 
     if (!companyId || !threadId) {
       alert("無効なURLです。ダッシュボードに戻ります。");
@@ -116,7 +118,6 @@
     function renderCaseDetails() {
       const detailsDiv = document.getElementById("caseDetails");
 
-      // 上部の基本情報
       let html = `
         <h2>団体名: ${currentData.groupName || "-"}</h2>
         <p>団体名ふりがな: ${currentData.groupNameFurigana || "-"}</p>
@@ -125,7 +126,6 @@
         <p>帰着日: ${currentData.arrivalDate || "-"}</p>
       `;
 
-      // 第1希望・第2希望・第3希望をテーブル形式で表示
       html += `
       <table>
         <thead>
@@ -141,7 +141,6 @@
           </tr>
         </thead>
         <tbody>
-          <!-- 第1希望 -->
           <tr>
             <th>第1希望</th>
             <td>${currentData.trainName || "-"}</td>
@@ -152,7 +151,6 @@
             <td>${currentData.numberOfAttendants || "-"}</td>
             <td>${currentData.seatType || "-"}</td>
           </tr>
-          <!-- 第2希望 -->
           <tr>
             <th>第2希望</th>
             <td>${currentData.secondTrainName || "-"}</td>
@@ -163,7 +161,6 @@
             <td>${currentData.secondNumberOfAttendants || "-"}</td>
             <td>${currentData.secondSeatType || "-"}</td>
           </tr>
-          <!-- 第3希望 -->
           <tr>
             <th>第3希望</th>
             <td>${currentData.thirdTrainName || "-"}</td>
@@ -178,7 +175,6 @@
       </table>
       `;
 
-      // 更新日時
       html += `
         <p>最終更新: ${
           currentData.last_updated
@@ -187,7 +183,6 @@
         }</p>
       `;
 
-      // 画像があれば表示
       if (currentData.imageUrl) {
         html += `
           <div>
@@ -204,14 +199,12 @@
     function toggleEditMode() {
       const detailsDiv = document.getElementById("caseDetails");
       if (!editing) {
-        // 編集フォーム表示（テーブル形式）
         detailsDiv.innerHTML = `
           <h2>団体名: <input type="text" id="edit_groupName" value="${currentData.groupName || ''}"></h2>
           <p>団体名ふりがな: <input type="text" id="edit_groupNameFurigana" value="${currentData.groupNameFurigana || ''}"></p>
           <p>団体種別: <input type="text" id="edit_groupType" value="${currentData.groupType || ''}"></p>
           <p>出発日: <input type="date" id="edit_departureDate" value="${currentData.departureDate || ''}"></p>
           <p>帰着日: <input type="date" id="edit_arrivalDate" value="${currentData.arrivalDate || ''}"></p>
-
           <table>
             <thead>
               <tr>
@@ -226,7 +219,6 @@
               </tr>
             </thead>
             <tbody>
-              <!-- 第1希望 -->
               <tr>
                 <th>第1希望</th>
                 <td><input type="text" id="edit_trainName" value="${currentData.trainName || ''}"></td>
@@ -237,7 +229,6 @@
                 <td><input type="number" id="edit_numberOfAttendants" value="${currentData.numberOfAttendants || ''}"></td>
                 <td><input type="text" id="edit_seatType" value="${currentData.seatType || ''}"></td>
               </tr>
-              <!-- 第2希望 -->
               <tr>
                 <th>第2希望</th>
                 <td><input type="text" id="edit_secondTrainName" value="${currentData.secondTrainName || ''}"></td>
@@ -248,7 +239,6 @@
                 <td><input type="number" id="edit_secondNumberOfAttendants" value="${currentData.secondNumberOfAttendants || ''}"></td>
                 <td><input type="text" id="edit_secondSeatType" value="${currentData.secondSeatType || ''}"></td>
               </tr>
-              <!-- 第3希望 -->
               <tr>
                 <th>第3希望</th>
                 <td><input type="text" id="edit_thirdTrainName" value="${currentData.thirdTrainName || ''}"></td>
@@ -261,34 +251,24 @@
               </tr>
             </tbody>
           </table>
-
-          <!-- 画像アップロード用のinputを追加 -->
           <p>添付画像（1枚のみ）: <input type="file" id="imageUpload" accept="image/*"></p>
-
           <button onclick="saveEdits()">保存</button>
           <button onclick="toggleEditMode()">キャンセル</button>
         `;
         editing = true;
       } else {
-        // キャンセルして元の表示に戻す
         renderCaseDetails();
         editing = false;
       }
     }
 
-    // 編集内容の保存
     function saveEdits() {
-      // ★ 保存前にスピナーを表示
       document.getElementById("spinner").style.display = "block";
-
-      // 基本情報
       const newGroupName = document.getElementById("edit_groupName").value.trim();
       const newGroupNameFurigana = document.getElementById("edit_groupNameFurigana").value.trim();
       const newGroupType = document.getElementById("edit_groupType").value.trim();
       const newDepartureDate = document.getElementById("edit_departureDate").value;
       const newArrivalDate = document.getElementById("edit_arrivalDate").value;
-
-      // 第1希望
       const newTrainName = document.getElementById("edit_trainName").value.trim();
       const newDeparture = document.getElementById("edit_departure").value.trim();
       const newArrival = document.getElementById("edit_arrival").value.trim();
@@ -296,8 +276,6 @@
       const newNumberOfChildren = document.getElementById("edit_numberOfChildren").value.trim();
       const newNumberOfAttendants = document.getElementById("edit_numberOfAttendants").value.trim();
       const newSeatType = document.getElementById("edit_seatType").value.trim();
-
-      // 第2希望
       const newSecondTrainName = document.getElementById("edit_secondTrainName").value.trim();
       const newSecondDeparture = document.getElementById("edit_secondDeparture").value.trim();
       const newSecondArrival = document.getElementById("edit_secondArrival").value.trim();
@@ -305,8 +283,6 @@
       const newSecondNumberOfChildren = document.getElementById("edit_secondNumberOfChildren").value.trim();
       const newSecondNumberOfAttendants = document.getElementById("edit_secondNumberOfAttendants").value.trim();
       const newSecondSeatType = document.getElementById("edit_secondSeatType").value.trim();
-
-      // 第3希望
       const newThirdTrainName = document.getElementById("edit_thirdTrainName").value.trim();
       const newThirdDeparture = document.getElementById("edit_thirdDeparture").value.trim();
       const newThirdArrival = document.getElementById("edit_thirdArrival").value.trim();
@@ -315,16 +291,12 @@
       const newThirdNumberOfAttendants = document.getElementById("edit_thirdNumberOfAttendants").value.trim();
       const newThirdSeatType = document.getElementById("edit_thirdSeatType").value.trim();
 
-      // 更新データオブジェクト
       const updatedData = {
-        // 上部情報
         groupName: newGroupName,
         groupNameFurigana: newGroupNameFurigana,
         groupType: newGroupType,
         departureDate: newDepartureDate,
         arrivalDate: newArrivalDate,
-
-        // 第1希望
         trainName: newTrainName,
         departure: newDeparture,
         arrival: newArrival,
@@ -332,8 +304,6 @@
         numberOfChildren: newNumberOfChildren,
         numberOfAttendants: newNumberOfAttendants,
         seatType: newSeatType,
-
-        // 第2希望
         secondTrainName: newSecondTrainName,
         secondDeparture: newSecondDeparture,
         secondArrival: newSecondArrival,
@@ -341,8 +311,6 @@
         secondNumberOfChildren: newSecondNumberOfChildren,
         secondNumberOfAttendants: newSecondNumberOfAttendants,
         secondSeatType: newSecondSeatType,
-
-        // 第3希望
         thirdTrainName: newThirdTrainName,
         thirdDeparture: newThirdDeparture,
         thirdArrival: newThirdArrival,
@@ -350,20 +318,15 @@
         thirdNumberOfChildren: newThirdNumberOfChildren,
         thirdNumberOfAttendants: newThirdNumberOfAttendants,
         thirdSeatType: newThirdSeatType,
-
         last_updated: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      // 変更された項目リスト（編集コメント用）
       let changes = [];
-      // 上部情報
       if (newGroupName !== currentData.groupName) changes.push(`団体名: ${newGroupName}`);
       if (newGroupNameFurigana !== currentData.groupNameFurigana) changes.push(`団体名ふりがな: ${newGroupNameFurigana}`);
       if (newGroupType !== currentData.groupType) changes.push(`団体種別: ${newGroupType}`);
       if (newDepartureDate !== currentData.departureDate) changes.push(`出発日: ${newDepartureDate}`);
       if (newArrivalDate !== currentData.arrivalDate) changes.push(`帰着日: ${newArrivalDate}`);
-
-      // 第1希望
       if (newTrainName !== currentData.trainName) changes.push(`列車名: ${newTrainName}`);
       if (newDeparture !== currentData.departure) changes.push(`発地: ${newDeparture}`);
       if (newArrival !== currentData.arrival) changes.push(`着地: ${newArrival}`);
@@ -371,8 +334,6 @@
       if (newNumberOfChildren !== currentData.numberOfChildren) changes.push(`小児: ${newNumberOfChildren}`);
       if (newNumberOfAttendants !== currentData.numberOfAttendants) changes.push(`添乗員: ${newNumberOfAttendants}`);
       if (newSeatType !== currentData.seatType) changes.push(`座席: ${newSeatType}`);
-
-      // 第2希望
       if (newSecondTrainName !== currentData.secondTrainName) changes.push(`第2希望-列車名: ${newSecondTrainName}`);
       if (newSecondDeparture !== currentData.secondDeparture) changes.push(`第2希望-発地: ${newSecondDeparture}`);
       if (newSecondArrival !== currentData.secondArrival) changes.push(`第2希望-着地: ${newSecondArrival}`);
@@ -380,8 +341,6 @@
       if (newSecondNumberOfChildren !== currentData.secondNumberOfChildren) changes.push(`第2希望-小児: ${newSecondNumberOfChildren}`);
       if (newSecondNumberOfAttendants !== currentData.secondNumberOfAttendants) changes.push(`第2希望-添乗員: ${newSecondNumberOfAttendants}`);
       if (newSecondSeatType !== currentData.secondSeatType) changes.push(`第2希望-座席: ${newSecondSeatType}`);
-
-      // 第3希望
       if (newThirdTrainName !== currentData.thirdTrainName) changes.push(`第3希望-列車名: ${newThirdTrainName}`);
       if (newThirdDeparture !== currentData.thirdDeparture) changes.push(`第3希望-発地: ${newThirdDeparture}`);
       if (newThirdArrival !== currentData.thirdArrival) changes.push(`第3希望-着地: ${newThirdArrival}`);
@@ -390,39 +349,32 @@
       if (newThirdNumberOfAttendants !== currentData.thirdNumberOfAttendants) changes.push(`第3希望-添乗員: ${newThirdNumberOfAttendants}`);
       if (newThirdSeatType !== currentData.thirdSeatType) changes.push(`第3希望-座席: ${newThirdSeatType}`);
 
-      // 画像がアップロードされた場合のみStorageにアップロード
       const fileInput = document.getElementById("imageUpload");
       const file = fileInput ? fileInput.files[0] : null;
 
       if (file) {
         const extension = file.name.split('.').pop();
-        // Storageのパス(例: cases/{threadId}/caseImage.{拡張子})
         const storageRef = storage.ref().child(`cases/${threadId}/caseImage.${extension}`);
 
-        // Firebase Storageにアップロード
         storageRef.put(file)
           .then(snapshot => snapshot.ref.getDownloadURL())
           .then(downloadURL => {
-            updatedData.imageUrl = downloadURL; // Firestoreに保存するURL
+            updatedData.imageUrl = downloadURL;
             changes.push(`画像変更: ${downloadURL}`);
-            // Firestore更新
             return updateFirestoreData(updatedData, changes);
           })
           .then(() => {
             alert("案件が更新されました！");
             editing = false;
             loadCaseDetails();
-            // スピナー非表示
             document.getElementById("spinner").style.display = "none";
           })
           .catch(error => {
             console.error("Error uploading image or updating case:", error);
             alert("画像アップロードまたは更新中にエラーが発生しました。");
-            // スピナー非表示
             document.getElementById("spinner").style.display = "none";
           });
       } else {
-        // 画像未指定の場合
         updateFirestoreData(updatedData, changes)
           .then(() => {
             alert("案件が更新されました！");
@@ -434,17 +386,14 @@
             alert("案件更新中にエラーが発生しました。");
           })
           .finally(() => {
-            // スピナー非表示
             document.getElementById("spinner").style.display = "none";
           });
       }
     }
 
-    // Firestoreの更新処理(画像有無に関わらず共通で利用)
     function updateFirestoreData(updatedData, changes) {
       return db.collection("companies").doc(companyId).collection("threads").doc(threadId).update(updatedData)
         .then(() => {
-          // 編集された項目のみコメントに追加
           if (changes.length > 0) {
             const editCommentText = "編集内容: " + changes.join(", ");
             const editComment = {
@@ -461,7 +410,6 @@
         });
     }
 
-    // コメント一覧を表示
     function loadComments() {
       db.collection("companies").doc(companyId).collection("threads").doc(threadId).collection("comments")
         .orderBy("timestamp", "asc")
@@ -478,7 +426,7 @@
         });
     }
 
-    // コメントを投稿
+    // コメント投稿（role情報を反映）
     function submitComment() {
       const newComment = document.getElementById("newComment").value;
       if (!newComment) {
@@ -486,8 +434,13 @@
         return;
       }
 
+      let displayName = "販売店担当者";
+      if (params.get("role") === "companyA") {
+        displayName = "会社A";
+      }
+
       const commentData = {
-        name: "販売店担当者", // 必要ならログイン情報から取得
+        name: displayName,
         text: newComment,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -504,22 +457,19 @@
         });
     }
 
-    // コメント投稿時の通知 コメントアウトしたので、復活する場合は　//を外す
-    //function sendEmailNotification(comment) {
-      //emailjs.send("service_yk6nvsg", "template_3xbq589", {
-        //to_email: "pinball_sawara@yahoo.co.jp",
-        //message: `新しいコメントが投稿されました: ${comment}`
-      //})
-      //.then(response => console.log("メール通知成功:", response))
-      //.catch(error => console.error("メール送信エラー:", error));
-    //}
+    //  function sendEmailNotification(comment) {
+    //    emailjs.send("service_yk6nvsg", "template_3xbq589", {
+    //      to_email: "yoshiaki.murata20@gmail.com",
+     //     message: `新しいコメントが投稿されました: ${comment}`
+     //   })
+     //   .then(response => console.log("メール通知成功:", response))
+     //   .catch(error => console.error("メール送信エラー:", error));
+    //  }
 
-    // 販売店ダッシュボードへ戻るボタン
     function goToDashboard() {
       window.location.href = "dashboard.html?company=" + companyId;
     }
 
-    // 初期化
     loadCaseDetails();
     loadComments();
   </script>
