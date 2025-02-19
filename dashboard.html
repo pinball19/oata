@@ -12,12 +12,12 @@
   <!-- EmailJS -->
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 
-  <!-- ★ スピナーの簡易CSSアニメーション -->
+  <!-- ★ スピナーの簡易CSSアニメーションを定義 -->
   <style>
     /* スピナー本体 */
     #spinner {
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #3498db;
+      border: 8px solid #f3f3f3; /* 薄いグレー */
+      border-top: 8px solid #3498db; /* 青 */
       border-radius: 50%;
       width: 50px;
       height: 50px;
@@ -28,7 +28,7 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    /* カードの見た目 */
+    /* カードの見た目は自由に調整してください */
     .project-card {
       border: 1px solid #ccc;
       padding: 1em;
@@ -38,6 +38,7 @@
     table {
       border-collapse: collapse;
       margin-top: 0.5em;
+      width: 100%;
     }
     th, td {
       border: 1px solid #ccc;
@@ -46,214 +47,275 @@
     }
     th {
       background: #f9f9f9;
-      min-width: 80px;
+      min-width: 60px;
+    }
+    /* 新案件作成フォーム用のテーブル */
+    #newCaseForm table {
+      width: auto;
+      margin-bottom: 1em;
+    }
+    #newCaseForm label {
+      display: block;
+      margin-bottom: 0.5em;
     }
   </style>
 
   <script>
-    // EmailJS 初期化（YOUR_EMAILJS_PUBLIC_KEY を置換）
+    // EmailJS 初期化（YOUR_EMAILJS_PUBLIC_KEY をご自身のものに置換）
     emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
 
-    // Firebase 初期化（login.html と同じ設定）
-    const firebaseConfig = {
-      apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
-      authDomain: "oata-8c05b.firebaseapp.com",
-      projectId: "oata-8c05b",
-      storageBucket: "oata-8c05b.firebasestorage.app",
-      messagingSenderId: "949261471175",
-      appId: "1:949261471175:web:28482b939262d8e93f1de2",
-      measurementId: "G-02LMR8FTNX"
-    };
+    // Firebase 初期化（login.htmlと同じ設定を使用）
+const firebaseConfig = {
+  apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
+  authDomain: "oata-8c05b.firebaseapp.com",
+  projectId: "oata-8c05b",
+  storageBucket: "oata-8c05b.firebasestorage.app",
+  messagingSenderId: "949261471175",
+  appId: "1:949261471175:web:28482b939262d8e93f1de2",
+  measurementId: "G-02LMR8FTNX"
+};
     firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>販売店ダッシュボード</h1>
+    <p id="welcomeMsg"></p>
+    <button onclick="showForm()">＋ 新しい案件を作成</button>
+    
+    <!-- 新しい案件作成フォーム（テーブル形式） -->
+    <div id="newCaseForm" style="display: none;">
+      <h2>案件情報を入力</h2>
+      
+      <!-- 団体情報 -->
+      <table>
+        <tr>
+          <th>団体名</th>
+          <td><input type="text" id="groupName"></td>
+        </tr>
+        <tr>
+          <th>団体名ふりがな</th>
+          <td><input type="text" id="groupNameFurigana"></td>
+        </tr>
+        <tr>
+          <th>団体種別</th>
+          <td><input type="text" id="groupType"></td>
+        </tr>
+      </table>
+
+      <!-- 第1希望 -->
+      <h3>第1希望</h3>
+      <table>
+        <tr>
+          <th>列車名</th>
+          <td><input type="text" id="trainName"></td>
+          <th>発地</th>
+          <td><input type="text" id="departure"></td>
+          <th>着地</th>
+          <td><input type="text" id="arrival"></td>
+        </tr>
+        <tr>
+          <th>大人</th>
+          <td><input type="number" id="numberOfAdults"></td>
+          <th>小児</th>
+          <td><input type="number" id="numberOfChildren"></td>
+          <th>添乗員</th>
+          <td><input type="number" id="numberOfAttendants"></td>
+          <th>座席</th>
+          <td><input type="text" id="seatType"></td>
+        </tr>
+      </table>
+
+      <!-- 第2希望 -->
+      <h3>第2希望</h3>
+      <table>
+        <tr>
+          <th>列車名</th>
+          <td><input type="text" id="secondTrainName"></td>
+          <th>発地</th>
+          <td><input type="text" id="secondDeparture"></td>
+          <th>着地</th>
+          <td><input type="text" id="secondArrival"></td>
+        </tr>
+        <tr>
+          <th>大人</th>
+          <td><input type="number" id="secondNumberOfAdults"></td>
+          <th>小児</th>
+          <td><input type="number" id="secondNumberOfChildren"></td>
+          <th>添乗員</th>
+          <td><input type="number" id="secondNumberOfAttendants"></td>
+          <th>座席</th>
+          <td><input type="text" id="secondSeatType"></td>
+        </tr>
+      </table>
+
+      <!-- 第3希望 -->
+      <h3>第3希望</h3>
+      <table>
+        <tr>
+          <th>列車名</th>
+          <td><input type="text" id="thirdTrainName"></td>
+          <th>発地</th>
+          <td><input type="text" id="thirdDeparture"></td>
+          <th>着地</th>
+          <td><input type="text" id="thirdArrival"></td>
+        </tr>
+        <tr>
+          <th>大人</th>
+          <td><input type="number" id="thirdNumberOfAdults"></td>
+          <th>小児</th>
+          <td><input type="number" id="thirdNumberOfChildren"></td>
+          <th>添乗員</th>
+          <td><input type="number" id="thirdNumberOfAttendants"></td>
+          <th>座席</th>
+          <td><input type="text" id="thirdSeatType"></td>
+        </tr>
+      </table>
+
+      <hr>
+      <!-- 基本情報 -->
+      <table>
+        <tr>
+          <th>案件名</th>
+          <td><input type="text" id="caseTitle"></td>
+        </tr>
+        <tr>
+          <th>出発日</th>
+          <td><input type="date" id="departureDate"></td>
+          <th>帰着日</th>
+          <td><input type="date" id="arrivalDate"></td>
+        </tr>
+        <tr>
+          <th>マル契種類</th>
+          <td><input type="text" id="contractType"></td>
+          <th>金額（予定）</th>
+          <td><input type="number" id="estimatedPrice"></td>
+        </tr>
+        <tr>
+          <th>金額（確定）</th>
+          <td><input type="number" id="confirmedPrice"></td>
+          <th>備考</th>
+          <td><textarea id="remarks"></textarea></td>
+        </tr>
+        <tr>
+          <th>画像添付</th>
+          <td colspan="3"><input type="file" id="caseImage" accept="image/*"></td>
+        </tr>
+      </table>
+      <!-- スピナー -->
+      <div id="spinner" style="display: none;"></div>
+      <button onclick="createNewCase()">保存</button>
+      <button onclick="cancelNewCase()">キャンセル</button>
+    </div>
+
+    <h3>過去半年の案件</h3>
+    <div id="caseList"></div>
+    <button onclick="downloadCSV()">CSV ダウンロード</button>
+  </div>
+
+  <script>
     const db = firebase.firestore();
     const storage = firebase.storage();
-
-    // ログイン状態の確認と表示切替
-    window.onload = () => {
-      const loggedInCompany = localStorage.getItem("company_id");
-      if (!loggedInCompany) {
-        document.getElementById("loginArea").style.display = "block";
-        document.getElementById("dashboardArea").style.display = "none";
-      } else {
-        document.getElementById("loginArea").style.display = "none";
-        document.getElementById("dashboardArea").style.display = "block";
-        loadCases();
-      }
-    };
-
-    // ログイン処理
-    async function login() {
-      const companyID = document.getElementById("companyID").value.trim();
-      const password = document.getElementById("password").value.trim();
-      if (!companyID || !password) {
-        alert("販売店IDとパスワードを入力してください");
-        return;
-      }
-      try {
-        const doc = await db.collection("companies").doc(companyID).get();
-        if (!doc.exists) {
-          alert("販売店IDが存在しません");
-          return;
-        }
-        const data = doc.data();
-        if (data.password !== password) {
-          alert("パスワードが間違っています");
-          return;
-        }
-        localStorage.setItem("company_id", companyID);
-        document.getElementById("loginArea").style.display = "none";
-        document.getElementById("dashboardArea").style.display = "block";
-        loadCases();
-      } catch (err) {
-        console.error("ログインエラー:", err);
-        alert("ログイン中にエラーが発生しました");
-      }
+    const urlParams = new URLSearchParams(window.location.search);
+    let companyId = urlParams.get("company") || localStorage.getItem("company_id");
+    if (!companyId) {
+      alert("ログインしてください");
+      window.location.href = "login.html";
     }
+    document.getElementById("welcomeMsg").innerText = "ようこそ、" + companyId + " 様";
 
-    // ログアウト処理
-    function logout() {
-      localStorage.removeItem("company_id");
-      window.location.reload();
-    }
-
-    // -------------------------
-    // 「新しい案件作成」フォームの表示／非表示
+    // フォームを表示
     function showForm() {
       document.getElementById("newCaseForm").style.display = "block";
     }
+
+    // キャンセルボタン：フォームを非表示＆リセット
     function cancelNewCase() {
       document.getElementById("newCaseForm").style.display = "none";
-      resetNewCaseForm();
-    }
-    function resetNewCaseForm() {
-      // ここでは、すべての入力欄を空にする（編集フォームと同じレイアウト）
-      const fields = [
-        "new_groupName", "new_groupNameFurigana", "new_groupType", "new_departureDate", "new_arrivalDate",
-        "new_trainName", "new_departure", "new_arrival", "new_numberOfAdults", "new_numberOfChildren", "new_numberOfAttendants", "new_seatType",
-        "new_secondTrainName", "new_secondDeparture", "new_secondArrival", "new_secondNumberOfAdults", "new_secondNumberOfChildren", "new_secondNumberOfAttendants", "new_secondSeatType",
-        "new_thirdTrainName", "new_thirdDeparture", "new_thirdArrival", "new_thirdNumberOfAdults", "new_thirdNumberOfChildren", "new_thirdNumberOfAttendants", "new_thirdSeatType",
-        "new_caseTitle", "new_contractType", "new_estimatedPrice", "new_confirmedPrice", "new_remarks"
-      ];
-      fields.forEach(id => document.getElementById(id).value = "");
-      document.getElementById("new_caseImage").value = "";
+      document.getElementById("groupName").value = "";
+      document.getElementById("groupNameFurigana").value = "";
+      document.getElementById("groupType").value = "";
+
+      document.getElementById("trainName").value = "";
+      document.getElementById("departure").value = "";
+      document.getElementById("arrival").value = "";
+      document.getElementById("numberOfAdults").value = "";
+      document.getElementById("numberOfChildren").value = "";
+      document.getElementById("numberOfAttendants").value = "";
+      document.getElementById("seatType").value = "";
+
+      document.getElementById("secondTrainName").value = "";
+      document.getElementById("secondDeparture").value = "";
+      document.getElementById("secondArrival").value = "";
+      document.getElementById("secondNumberOfAdults").value = "";
+      document.getElementById("secondNumberOfChildren").value = "";
+      document.getElementById("secondNumberOfAttendants").value = "";
+      document.getElementById("secondSeatType").value = "";
+
+      document.getElementById("thirdTrainName").value = "";
+      document.getElementById("thirdDeparture").value = "";
+      document.getElementById("thirdArrival").value = "";
+      document.getElementById("thirdNumberOfAdults").value = "";
+      document.getElementById("thirdNumberOfChildren").value = "";
+      document.getElementById("thirdNumberOfAttendants").value = "";
+      document.getElementById("thirdSeatType").value = "";
+
+      document.getElementById("caseTitle").value = "";
+      document.getElementById("departureDate").value = "";
+      document.getElementById("arrivalDate").value = "";
+      document.getElementById("contractType").value = "";
+      document.getElementById("estimatedPrice").value = "";
+      document.getElementById("confirmedPrice").value = "";
+      document.getElementById("remarks").value = "";
+      document.getElementById("caseImage").value = "";
+      document.getElementById("spinner").style.display = "none";
     }
 
-    // -------------------------
-    // 新しい案件作成フォームのHTML（編集フォームと同じレイアウト）
-    function renderNewCaseForm() {
-      return `
-        <h2>案件情報を入力</h2>
-        <h3>団体情報</h3>
-        <p>団体名: <input type="text" id="new_groupName" placeholder="団体名"></p>
-        <p>団体名ふりがな: <input type="text" id="new_groupNameFurigana" placeholder="ふりがな"></p>
-        <p>団体種別: <input type="text" id="new_groupType" placeholder="種別"></p>
-        <p>出発日: <input type="date" id="new_departureDate"></p>
-        <p>帰着日: <input type="date" id="new_arrivalDate"></p>
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>列車名</th>
-              <th>発地</th>
-              <th>着地</th>
-              <th>大人</th>
-              <th>小児</th>
-              <th>添乗員</th>
-              <th>座席</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>第1希望</th>
-              <td><input type="text" id="new_trainName" placeholder="列車名"></td>
-              <td><input type="text" id="new_departure" placeholder="発地"></td>
-              <td><input type="text" id="new_arrival" placeholder="着地"></td>
-              <td><input type="number" id="new_numberOfAdults" placeholder="大人"></td>
-              <td><input type="number" id="new_numberOfChildren" placeholder="小児"></td>
-              <td><input type="number" id="new_numberOfAttendants" placeholder="添乗員"></td>
-              <td><input type="text" id="new_seatType" placeholder="座席"></td>
-            </tr>
-            <tr>
-              <th>第2希望</th>
-              <td><input type="text" id="new_secondTrainName" placeholder="列車名"></td>
-              <td><input type="text" id="new_secondDeparture" placeholder="発地"></td>
-              <td><input type="text" id="new_secondArrival" placeholder="着地"></td>
-              <td><input type="number" id="new_secondNumberOfAdults" placeholder="大人"></td>
-              <td><input type="number" id="new_secondNumberOfChildren" placeholder="小児"></td>
-              <td><input type="number" id="new_secondNumberOfAttendants" placeholder="添乗員"></td>
-              <td><input type="text" id="new_secondSeatType" placeholder="座席"></td>
-            </tr>
-            <tr>
-              <th>第3希望</th>
-              <td><input type="text" id="new_thirdTrainName" placeholder="列車名"></td>
-              <td><input type="text" id="new_thirdDeparture" placeholder="発地"></td>
-              <td><input type="text" id="new_thirdArrival" placeholder="着地"></td>
-              <td><input type="number" id="new_thirdNumberOfAdults" placeholder="大人"></td>
-              <td><input type="number" id="new_thirdNumberOfChildren" placeholder="小児"></td>
-              <td><input type="number" id="new_thirdNumberOfAttendants" placeholder="添乗員"></td>
-              <td><input type="text" id="new_thirdSeatType" placeholder="座席"></td>
-            </tr>
-          </tbody>
-        </table>
-        <h3>基本情報</h3>
-        <p>案件名: <input type="text" id="new_caseTitle" placeholder="案件名"></p>
-        <p>契約種類: <input type="text" id="new_contractType" placeholder="契約種類"></p>
-        <p>金額（予定）: <input type="number" id="new_estimatedPrice" placeholder="予定金額"></p>
-        <p>金額（確定）: <input type="number" id="new_confirmedPrice" placeholder="確定金額"></p>
-        <p>備考: <textarea id="new_remarks" placeholder="備考"></textarea></p>
-        <p>画像添付: <input type="file" id="new_caseImage" accept="image/*"></p>
-        <div id="spinner" style="display: none;"></div>
-        <button onclick="createNewCase()">保存</button>
-        <button onclick="cancelNewCase()">キャンセル</button>
-      `;
-    }
-
-    // 新案件作成処理
+    // 新しい案件作成：画像アップロード + Firestore登録
     async function createNewCase() {
-      document.getElementById("spinner").style.display = "block";
+      const spinner = document.getElementById("spinner");
+      spinner.style.display = "block";
       try {
-        // 団体情報・基本情報・第1～第3希望の値を取得
-        const groupName = document.getElementById("new_groupName").value.trim();
-        const groupNameFurigana = document.getElementById("new_groupNameFurigana").value.trim();
-        const groupType = document.getElementById("new_groupType").value.trim();
-        const departureDate = document.getElementById("new_departureDate").value;
-        const arrivalDate = document.getElementById("new_arrivalDate").value;
-        
-        const trainName = document.getElementById("new_trainName").value.trim();
-        const departure = document.getElementById("new_departure").value.trim();
-        const arrival = document.getElementById("new_arrival").value.trim();
-        const numberOfAdults = document.getElementById("new_numberOfAdults").value.trim();
-        const numberOfChildren = document.getElementById("new_numberOfChildren").value.trim();
-        const numberOfAttendants = document.getElementById("new_numberOfAttendants").value.trim();
-        const seatType = document.getElementById("new_seatType").value.trim();
+        const groupName = document.getElementById("groupName").value.trim();
+        const groupNameFurigana = document.getElementById("groupNameFurigana").value.trim();
+        const groupType = document.getElementById("groupType").value.trim();
 
-        const secondTrainName = document.getElementById("new_secondTrainName").value.trim();
-        const secondDeparture = document.getElementById("new_secondDeparture").value.trim();
-        const secondArrival = document.getElementById("new_secondArrival").value.trim();
-        const secondNumberOfAdults = document.getElementById("new_secondNumberOfAdults").value.trim();
-        const secondNumberOfChildren = document.getElementById("new_secondNumberOfChildren").value.trim();
-        const secondNumberOfAttendants = document.getElementById("new_secondNumberOfAttendants").value.trim();
-        const secondSeatType = document.getElementById("new_secondSeatType").value.trim();
+        const trainName = document.getElementById("trainName").value.trim();
+        const departure = document.getElementById("departure").value.trim();
+        const arrival = document.getElementById("arrival").value.trim();
+        const numberOfAdults = document.getElementById("numberOfAdults").value.trim();
+        const numberOfChildren = document.getElementById("numberOfChildren").value.trim();
+        const numberOfAttendants = document.getElementById("numberOfAttendants").value.trim();
+        const seatType = document.getElementById("seatType").value.trim();
 
-        const thirdTrainName = document.getElementById("new_thirdTrainName").value.trim();
-        const thirdDeparture = document.getElementById("new_thirdDeparture").value.trim();
-        const thirdArrival = document.getElementById("new_thirdArrival").value.trim();
-        const thirdNumberOfAdults = document.getElementById("new_thirdNumberOfAdults").value.trim();
-        const thirdNumberOfChildren = document.getElementById("new_thirdNumberOfChildren").value.trim();
-        const thirdNumberOfAttendants = document.getElementById("new_thirdNumberOfAttendants").value.trim();
-        const thirdSeatType = document.getElementById("new_thirdSeatType").value.trim();
+        const secondTrainName = document.getElementById("secondTrainName").value.trim();
+        const secondDeparture = document.getElementById("secondDeparture").value.trim();
+        const secondArrival = document.getElementById("secondArrival").value.trim();
+        const secondNumberOfAdults = document.getElementById("secondNumberOfAdults").value.trim();
+        const secondNumberOfChildren = document.getElementById("secondNumberOfChildren").value.trim();
+        const secondNumberOfAttendants = document.getElementById("secondNumberOfAttendants").value.trim();
+        const secondSeatType = document.getElementById("secondSeatType").value.trim();
 
-        const caseTitle = document.getElementById("new_caseTitle").value.trim();
-        const contractType = document.getElementById("new_contractType").value.trim();
-        const estimatedPrice = document.getElementById("new_estimatedPrice").value.trim();
-        const confirmedPrice = document.getElementById("new_confirmedPrice").value.trim();
-        const remarks = document.getElementById("new_remarks").value.trim();
-        const caseImageFile = document.getElementById("new_caseImage").files[0];
+        const thirdTrainName = document.getElementById("thirdTrainName").value.trim();
+        const thirdDeparture = document.getElementById("thirdDeparture").value.trim();
+        const thirdArrival = document.getElementById("thirdArrival").value.trim();
+        const thirdNumberOfAdults = document.getElementById("thirdNumberOfAdults").value.trim();
+        const thirdNumberOfChildren = document.getElementById("thirdNumberOfChildren").value.trim();
+        const thirdNumberOfAttendants = document.getElementById("thirdNumberOfAttendants").value.trim();
+        const thirdSeatType = document.getElementById("thirdSeatType").value.trim();
 
-        // 必須項目チェック（例）
+        const caseTitle = document.getElementById("caseTitle").value.trim();
+        const departureDate = document.getElementById("departureDate").value;
+        const arrivalDate = document.getElementById("arrivalDate").value;
+        const contractType = document.getElementById("contractType").value.trim();
+        const estimatedPrice = document.getElementById("estimatedPrice").value.trim();
+        const confirmedPrice = document.getElementById("confirmedPrice").value.trim();
+        const remarks = document.getElementById("remarks").value.trim();
+        const caseImageFile = document.getElementById("caseImage").files[0];
+
         if (!groupName || !trainName || !departure || !arrival) {
           alert("団体名と第1希望（列車名・発地・着地）は必須項目です");
-          document.getElementById("spinner").style.display = "none";
+          spinner.style.display = "none";
           return;
         }
 
@@ -266,14 +328,10 @@
           imageUrl = await snapshot.ref.getDownloadURL();
         }
 
-        // Firestoreに新規追加（会社IDはlocalStorageから取得）
-        const companyId = localStorage.getItem("company_id");
         await db.collection("companies").doc(companyId).collection("threads").add({
           groupName: groupName,
           groupNameFurigana: groupNameFurigana,
           groupType: groupType,
-          departureDate: departureDate,
-          arrivalDate: arrivalDate,
           // 第1希望
           trainName: trainName,
           departure: departure,
@@ -300,6 +358,8 @@
           thirdSeatType: thirdSeatType,
           // 基本情報
           caseTitle: caseTitle,
+          departureDate: departureDate,
+          arrivalDate: arrivalDate,
           contractType: contractType,
           estimatedPrice: estimatedPrice,
           confirmedPrice: confirmedPrice,
@@ -314,12 +374,11 @@
         console.error("Error creating new case:", error);
         alert("案件作成中にエラーが発生しました。");
       } finally {
-        document.getElementById("spinner").style.display = "none";
+        spinner.style.display = "none";
       }
     }
 
-    // -------------------------
-    // 過去半年の案件表示
+    // 過去半年の案件をリアルタイム表示
     function loadCases() {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -340,7 +399,7 @@
               ? caseData.last_updated.toDate().toLocaleString()
               : "";
 
-            // 各案件をカード表示（テーブルに大人、小児、添乗員、座席も追加）
+            // 各案件をカード表示
             let div = document.createElement("div");
             div.className = "project-card";
 
@@ -356,6 +415,7 @@
             const firstChildren = caseData.numberOfChildren || "-";
             const firstAttendants = caseData.numberOfAttendants || "-";
             const firstSeat = caseData.seatType || "-";
+
             // 第2希望
             const secondTrainName = caseData.secondTrainName || "-";
             const secondDeparture = caseData.secondDeparture || "-";
@@ -364,6 +424,7 @@
             const secondChildren = caseData.secondNumberOfChildren || "-";
             const secondAttendants = caseData.secondNumberOfAttendants || "-";
             const secondSeat = caseData.secondSeatType || "-";
+
             // 第3希望
             const thirdTrainName = caseData.thirdTrainName || "-";
             const thirdDeparture = caseData.thirdDeparture || "-";
@@ -430,15 +491,15 @@
           });
         });
     }
+    loadCases();
 
-    // CSV ダウンロード（そのまま）
     async function downloadCSV() {
       try {
         const snapshot = await db.collection("companies").doc(companyId).collection("threads")
           .orderBy("last_updated", "desc")
           .get();
 
-        let csvContent = "data:text/csv;charset=utf-8,団体名,団体名ふりがな,団体種別,第1希望(列車名),第1希望(発地),第1希望(着地),第1希望(大人),第1希望(小児),第1希望(添乗員),第1希望(座席),第2希望(列車名),第2希望(発地),第2希望(着地),第2希望(大人),第2希望(小児),第2希望(添乗員),第2希望(座席),第3希望(列車名),第3希望(発地),第3希望(着地),第3希望(大人),第3希望(小児),第3希望(添乗員),第3希望(座席),備考,最終更新\n";
+        let csvContent = "data:text/csv;charset=utf-8,団体名,団体名ふりがな,団体種別,第1希望(列車名),第1希望(発地),第1希望(着地),第2希望(列車名),第2希望(発地),第2希望(着地),第3希望(列車名),第3希望(発地),第3希望(着地),備考,最終更新\n";
 
         snapshot.forEach(doc => {
           const caseData = doc.data();
@@ -453,30 +514,18 @@
           const firstTrainName = caseData.trainName || "";
           const firstDeparture = caseData.departure || "";
           const firstArrival = caseData.arrival || "";
-          const firstAdults = caseData.numberOfAdults || "";
-          const firstChildren = caseData.numberOfChildren || "";
-          const firstAttendants = caseData.numberOfAttendants || "";
-          const firstSeat = caseData.seatType || "";
 
           const secondTrainName = caseData.secondTrainName || "";
           const secondDeparture = caseData.secondDeparture || "";
           const secondArrival = caseData.secondArrival || "";
-          const secondAdults = caseData.secondNumberOfAdults || "";
-          const secondChildren = caseData.secondNumberOfChildren || "";
-          const secondAttendants = caseData.secondNumberOfAttendants || "";
-          const secondSeat = caseData.secondSeatType || "";
 
           const thirdTrainName = caseData.thirdTrainName || "";
           const thirdDeparture = caseData.thirdDeparture || "";
           const thirdArrival = caseData.thirdArrival || "";
-          const thirdAdults = caseData.thirdNumberOfAdults || "";
-          const thirdChildren = caseData.thirdNumberOfChildren || "";
-          const thirdAttendants = caseData.thirdNumberOfAttendants || "";
-          const thirdSeat = caseData.thirdSeatType || "";
 
           const remarks = (caseData.remarks || "").replace(/\"/g, '""');
 
-          csvContent += `"${groupName}","${groupNameFurigana}","${groupType}","${firstTrainName}","${firstDeparture}","${firstArrival}","${firstAdults}","${firstChildren}","${firstAttendants}","${firstSeat}","${secondTrainName}","${secondDeparture}","${secondArrival}","${secondAdults}","${secondChildren}","${secondAttendants}","${secondSeat}","${thirdTrainName}","${thirdDeparture}","${thirdArrival}","${thirdAdults}","${thirdChildren}","${thirdAttendants}","${thirdSeat}","${remarks}","${updatedDate}"\n`;
+          csvContent += `"${groupName}","${groupNameFurigana}","${groupType}","${firstTrainName}","${firstDeparture}","${firstArrival}","${secondTrainName}","${secondDeparture}","${secondArrival}","${thirdTrainName}","${thirdDeparture}","${thirdArrival}","${remarks}","${updatedDate}"\n`;
         });
 
         const encodedUri = encodeURI(csvContent);
@@ -491,21 +540,5 @@
       }
     }
   </script>
-</head>
-<body>
-  <div class="container">
-    <h1>販売店ダッシュボード</h1>
-    <p id="welcomeMsg"></p>
-    <button onclick="showForm()">＋ 新しい案件を作成</button>
-    
-    <!-- 新しい案件作成フォーム（編集フォームと同様のレイアウト） -->
-    <div id="newCaseForm" style="display: none;">
-      ${renderNewCaseForm()}
-    </div>
-    
-    <h3>過去半年の案件</h3>
-    <div id="caseList"></div>
-    <button onclick="downloadCSV()">CSV ダウンロード</button>
-  </div>
 </body>
 </html>
