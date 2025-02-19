@@ -12,7 +12,6 @@
   <!-- EmailJS -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-
   <!-- ★ スピナー用の簡易CSS（お好みで調整可能） -->
   <style>
     /* スピナー本体 */
@@ -52,7 +51,7 @@
 
     // Firebase 初期化
     const firebaseConfig = {
-      apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
+      apiKey: "AIzaSyDP...（ご自身のキー）",
       authDomain: "oata-8c05b.firebaseapp.com",
       projectId: "oata-8c05b",
       storageBucket: "oata-8c05b.firebasestorage.app",  // 必要に応じてご自身のStorageバケット名に合わせてください
@@ -126,7 +125,7 @@
         <p>帰着日: ${currentData.arrivalDate || "-"}</p>
       `;
 
-      // 第1希望・第2希望をテーブル形式で表示
+      // 第1希望・第2希望・第3希望をテーブル形式で表示
       html += `
       <table>
         <thead>
@@ -163,6 +162,17 @@
             <td>${currentData.secondNumberOfChildren || "-"}</td>
             <td>${currentData.secondNumberOfAttendants || "-"}</td>
             <td>${currentData.secondSeatType || "-"}</td>
+          </tr>
+          <!-- 第3希望 -->
+          <tr>
+            <th>第3希望</th>
+            <td>${currentData.thirdTrainName || "-"}</td>
+            <td>${currentData.thirdDeparture || "-"}</td>
+            <td>${currentData.thirdArrival || "-"}</td>
+            <td>${currentData.thirdNumberOfAdults || "-"}</td>
+            <td>${currentData.thirdNumberOfChildren || "-"}</td>
+            <td>${currentData.thirdNumberOfAttendants || "-"}</td>
+            <td>${currentData.thirdSeatType || "-"}</td>
           </tr>
         </tbody>
       </table>
@@ -238,6 +248,17 @@
                 <td><input type="number" id="edit_secondNumberOfAttendants" value="${currentData.secondNumberOfAttendants || ''}"></td>
                 <td><input type="text" id="edit_secondSeatType" value="${currentData.secondSeatType || ''}"></td>
               </tr>
+              <!-- 第3希望 -->
+              <tr>
+                <th>第3希望</th>
+                <td><input type="text" id="edit_thirdTrainName" value="${currentData.thirdTrainName || ''}"></td>
+                <td><input type="text" id="edit_thirdDeparture" value="${currentData.thirdDeparture || ''}"></td>
+                <td><input type="text" id="edit_thirdArrival" value="${currentData.thirdArrival || ''}"></td>
+                <td><input type="number" id="edit_thirdNumberOfAdults" value="${currentData.thirdNumberOfAdults || ''}"></td>
+                <td><input type="number" id="edit_thirdNumberOfChildren" value="${currentData.thirdNumberOfChildren || ''}"></td>
+                <td><input type="number" id="edit_thirdNumberOfAttendants" value="${currentData.thirdNumberOfAttendants || ''}"></td>
+                <td><input type="text" id="edit_thirdSeatType" value="${currentData.thirdSeatType || ''}"></td>
+              </tr>
             </tbody>
           </table>
 
@@ -285,6 +306,15 @@
       const newSecondNumberOfAttendants = document.getElementById("edit_secondNumberOfAttendants").value.trim();
       const newSecondSeatType = document.getElementById("edit_secondSeatType").value.trim();
 
+      // 第3希望
+      const newThirdTrainName = document.getElementById("edit_thirdTrainName").value.trim();
+      const newThirdDeparture = document.getElementById("edit_thirdDeparture").value.trim();
+      const newThirdArrival = document.getElementById("edit_thirdArrival").value.trim();
+      const newThirdNumberOfAdults = document.getElementById("edit_thirdNumberOfAdults").value.trim();
+      const newThirdNumberOfChildren = document.getElementById("edit_thirdNumberOfChildren").value.trim();
+      const newThirdNumberOfAttendants = document.getElementById("edit_thirdNumberOfAttendants").value.trim();
+      const newThirdSeatType = document.getElementById("edit_thirdSeatType").value.trim();
+
       // 更新データオブジェクト
       const updatedData = {
         // 上部情報
@@ -311,6 +341,15 @@
         secondNumberOfChildren: newSecondNumberOfChildren,
         secondNumberOfAttendants: newSecondNumberOfAttendants,
         secondSeatType: newSecondSeatType,
+
+        // 第3希望
+        thirdTrainName: newThirdTrainName,
+        thirdDeparture: newThirdDeparture,
+        thirdArrival: newThirdArrival,
+        thirdNumberOfAdults: newThirdNumberOfAdults,
+        thirdNumberOfChildren: newThirdNumberOfChildren,
+        thirdNumberOfAttendants: newThirdNumberOfAttendants,
+        thirdSeatType: newThirdSeatType,
 
         last_updated: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -341,6 +380,15 @@
       if (newSecondNumberOfChildren !== currentData.secondNumberOfChildren) changes.push(`第2希望-小児: ${newSecondNumberOfChildren}`);
       if (newSecondNumberOfAttendants !== currentData.secondNumberOfAttendants) changes.push(`第2希望-添乗員: ${newSecondNumberOfAttendants}`);
       if (newSecondSeatType !== currentData.secondSeatType) changes.push(`第2希望-座席: ${newSecondSeatType}`);
+
+      // 第3希望
+      if (newThirdTrainName !== currentData.thirdTrainName) changes.push(`第3希望-列車名: ${newThirdTrainName}`);
+      if (newThirdDeparture !== currentData.thirdDeparture) changes.push(`第3希望-発地: ${newThirdDeparture}`);
+      if (newThirdArrival !== currentData.thirdArrival) changes.push(`第3希望-着地: ${newThirdArrival}`);
+      if (newThirdNumberOfAdults !== currentData.thirdNumberOfAdults) changes.push(`第3希望-大人: ${newThirdNumberOfAdults}`);
+      if (newThirdNumberOfChildren !== currentData.thirdNumberOfChildren) changes.push(`第3希望-小児: ${newThirdNumberOfChildren}`);
+      if (newThirdNumberOfAttendants !== currentData.thirdNumberOfAttendants) changes.push(`第3希望-添乗員: ${newThirdNumberOfAttendants}`);
+      if (newThirdSeatType !== currentData.thirdSeatType) changes.push(`第3希望-座席: ${newThirdSeatType}`);
 
       // 画像がアップロードされた場合のみStorageにアップロード
       const fileInput = document.getElementById("imageUpload");
@@ -439,7 +487,7 @@
       }
 
       const commentData = {
-        name: "販売店担当者", // 固定またはログイン情報から取得
+        name: "販売店担当者", // 必要ならログイン情報から取得
         text: newComment,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       };
