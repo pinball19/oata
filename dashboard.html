@@ -83,7 +83,7 @@ const firebaseConfig = {
     <p id="welcomeMsg"></p>
     <button onclick="showForm()">＋ 新しい案件を作成</button>
     
-    <!-- 新しい案件作成フォーム -->
+    <!-- 新しい案件作成フォーム（テーブル形式） -->
     <div id="newCaseForm" style="display: none;">
       <h2>案件情報を入力</h2>
       
@@ -116,13 +116,13 @@ const firebaseConfig = {
         </tr>
         <tr>
           <th>大人</th>
-          <td><input type="number" id="numberOfAdults" style="width:50px;"></td>
+          <td><input type="number" id="numberOfAdults"></td>
           <th>小児</th>
-          <td><input type="number" id="numberOfChildren" style="width:50px;"></td>
+          <td><input type="number" id="numberOfChildren"></td>
           <th>添乗員</th>
-          <td><input type="number" id="numberOfAttendants" style="width:50px;"></td>
+          <td><input type="number" id="numberOfAttendants"></td>
           <th>座席</th>
-          <td><input type="text" id="seatType" style="width:50px;"></td>
+          <td><input type="text" id="seatType"></td>
         </tr>
       </table>
 
@@ -139,13 +139,13 @@ const firebaseConfig = {
         </tr>
         <tr>
           <th>大人</th>
-          <td><input type="number" id="secondNumberOfAdults" style="width:50px;"></td>
+          <td><input type="number" id="secondNumberOfAdults"></td>
           <th>小児</th>
-          <td><input type="number" id="secondNumberOfChildren" style="width:50px;"></td>
+          <td><input type="number" id="secondNumberOfChildren"></td>
           <th>添乗員</th>
-          <td><input type="number" id="secondNumberOfAttendants" style="width:50px;"></td>
+          <td><input type="number" id="secondNumberOfAttendants"></td>
           <th>座席</th>
-          <td><input type="text" id="secondSeatType" style="width:50px;"></td>
+          <td><input type="text" id="secondSeatType"></td>
         </tr>
       </table>
 
@@ -162,43 +162,20 @@ const firebaseConfig = {
         </tr>
         <tr>
           <th>大人</th>
-          <td><input type="number" id="thirdNumberOfAdults" style="width:50px;"></td>
+          <td><input type="number" id="thirdNumberOfAdults"></td>
           <th>小児</th>
-          <td><input type="number" id="thirdNumberOfChildren" style="width:50px;"></td>
+          <td><input type="number" id="thirdNumberOfChildren"></td>
           <th>添乗員</th>
-          <td><input type="number" id="thirdNumberOfAttendants" style="width:50px;"></td>
+          <td><input type="number" id="thirdNumberOfAttendants"></td>
           <th>座席</th>
-          <td><input type="text" id="thirdSeatType" style="width:50px;"></td>
+          <td><input type="text" id="thirdSeatType"></td>
         </tr>
-      </table>
+        </table>
 
-      <hr>
-      <!-- 基本情報 -->
+      <!-- 第3希望 -->
+      <h3>画像添付</h3>
       <table>
         <tr>
-          <th>案件名</th>
-          <td><input type="text" id="caseTitle"></td>
-        </tr>
-        <tr>
-          <th>出発日</th>
-          <td><input type="date" id="departureDate"></td>
-          <th>帰着日</th>
-          <td><input type="date" id="arrivalDate"></td>
-        </tr>
-        <tr>
-          <th>マル契種類</th>
-          <td><input type="text" id="contractType"></td>
-          <th>金額（予定）</th>
-          <td><input type="number" id="estimatedPrice"></td>
-        </tr>
-        <tr>
-          <th>金額（確定）</th>
-          <td><input type="number" id="confirmedPrice"></td>
-          <th>備考</th>
-          <td><textarea id="remarks"></textarea></td>
-        </tr>
-        <tr>
-          <th>画像添付</th>
           <td colspan="3"><input type="file" id="caseImage" accept="image/*"></td>
         </tr>
       </table>
