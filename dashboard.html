@@ -30,6 +30,14 @@
       0%   { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* カードの見た目は自由に調整してください */
+    .project-card {
+      border: 1px solid #ccc;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-radius: 5px;
+    }
   </style>
 
   <script>
@@ -38,7 +46,7 @@
 
     // Firebase 初期化（login.htmlと同じ設定を使用）
     const firebaseConfig = {
-      apiKey: "AIzaSyDPLwpz4GcsNrmn6HNKLPmQWokZgKT4Cis",
+      apiKey: "AIzaSyDPLwpz4GcsN...（省略）",
       authDomain: "oata-8c05b.firebaseapp.com",
       projectId: "oata-8c05b",
       // ★ 実際のバケット名に合わせてください（例: "oata-8c05b.appspot.com"）
@@ -135,9 +143,10 @@
         const remarks = document.getElementById("remarks").value.trim();
         const caseImageFile = document.getElementById("caseImage").files[0];
 
-        // 必須項目チェック
+        // 必須項目チェック（必要に応じて調整）
         if (!caseTitle || !departure || !arrival || !contractType) {
           alert("案件名、出発地、帰着地、マル契種類は必須項目です");
+          spinner.style.display = "none";
           return;
         }
 
@@ -147,15 +156,15 @@
           const filePath = `threads/${Date.now()}_caseImage.${extension}`;
           const storageRef = storage.ref().child(filePath);
 
-          // 画像アップロード (重い画像だと多少時間がかかる)
+          // 画像アップロード
           const snapshot = await storageRef.put(caseImageFile);
-
           // ダウンロードURL取得
           imageUrl = await snapshot.ref.getDownloadURL();
         }
 
         // Firestoreに追加
         await db.collection("companies").doc(companyId).collection("threads").add({
+          // ここは既存フィールドのまま
           caseTitle: caseTitle,
           departure: departure,
           departureDate: departureDate,
@@ -167,6 +176,13 @@
           remarks: remarks,
           imageUrl: imageUrl,
           last_updated: firebase.firestore.FieldValue.serverTimestamp()
+
+          // 新しい「第1希望～第3希望」「団体名」などは、
+          // もしダッシュボードの新規作成フォームでも入力するなら
+          // 下のように追加してFirestoreへ保存できます。
+          // groupName: ...,
+          // groupNameFurigana: ...,
+          // ...
         });
 
         alert("案件が作成されました！");
@@ -175,7 +191,6 @@
         console.error("Error creating new case:", error);
         alert("案件作成中にエラーが発生しました。");
       } finally {
-        // スピナーを非表示に
         spinner.style.display = "none";
       }
     }
@@ -200,25 +215,39 @@
             let updatedDate = caseData.last_updated
               ? caseData.last_updated.toDate().toLocaleString()
               : "";
+
+            // ★ ここを修正して、案件詳細ページに合わせた表示に変更
+            // 例：団体名、団体名ふりがな、団体種別をメインに表示
+            // ただし、既存フィールドも残すようにしています。
+            const groupName = caseData.groupName || caseData.caseTitle || "（未設定）";
+            const groupNameFurigana = caseData.groupNameFurigana || "";
+            const groupType = caseData.groupType || caseData.contractType || "";
+            const departureDate = caseData.departureDate || "-";
+            const arrivalDate = caseData.arrivalDate || "-";
+            const remarks = caseData.remarks || "";
+            const imageUrl = caseData.imageUrl || "";
+            // ほかに必要なフィールドがあれば適宜追加してください
+
             let div = document.createElement("div");
             div.className = "project-card";
+
             div.innerHTML = `
-              <h3>${caseData.caseTitle}</h3>
-              <p>出発地: ${caseData.departure}</p>
-              <p>出発日: ${caseData.departureDate || "-"}</p>
-              <p>帰着地: ${caseData.arrival}</p>
-              <p>帰着日: ${caseData.arrivalDate || "-"}</p>
-              <p>金額（予定）: ${caseData.estimatedPrice || "-"}</p>
-              <p>金額（確定）: ${caseData.confirmedPrice || "-"}</p>
-              <p>備考: ${caseData.remarks || "-"}</p>
+              <h3>団体名: ${groupName}</h3>
+              <p>団体名ふりがな: ${groupNameFurigana}</p>
+              <p>団体種別: ${groupType}</p>
+              <p>出発日: ${departureDate}</p>
+              <p>帰着日: ${arrivalDate}</p>
+              <p>備考: ${remarks}</p>
               <p>更新日時: ${updatedDate}</p>
               ${
-                caseData.imageUrl
-                  ? `<div><img src="${caseData.imageUrl}" alt="画像" style="max-width: 200px; max-height: 200px;"></div>`
+                imageUrl
+                  ? `<div><img src="${imageUrl}" alt="画像" style="max-width: 200px; max-height: 200px;"></div>`
                   : ""
               }
+              <!-- 詳細ページへのリンク -->
               <a href="thread.html?company=${companyId}&thread=${caseId}">詳細を見る</a>
             `;
+
             caseListDiv.appendChild(div);
           });
         });
@@ -232,22 +261,24 @@
           .orderBy("last_updated", "desc")
           .get();
 
-        let csvContent = "data:text/csv;charset=utf-8,案件名,出発地,出発日,帰着地,帰着日,マル契種類,金額（予定）,金額（確定）,備考,作成日\n";
+        let csvContent = "data:text/csv;charset=utf-8,案件名(団体名),団体名ふりがな,団体種別,出発日,帰着日,マル契種類,金額（予定）,金額（確定）,備考,最終更新\n";
         snapshot.forEach(doc => {
           const caseData = doc.data();
-          const createdDate = caseData.last_updated
+          const updatedDate = caseData.last_updated
             ? caseData.last_updated.toDate().toLocaleString()
             : "";
-          const title = (caseData.caseTitle || "").replace(/"/g, '""');
-          const departure = (caseData.departure || "").replace(/"/g, '""');
+          const groupName = caseData.groupName || caseData.caseTitle || "";
+          const groupNameFurigana = caseData.groupNameFurigana || "";
+          const groupType = caseData.groupType || caseData.contractType || "";
           const departureDate = caseData.departureDate || "";
-          const arrival = (caseData.arrival || "").replace(/"/g, '""');
           const arrivalDate = caseData.arrivalDate || "";
-          const contractType = (caseData.contractType || "").replace(/"/g, '""');
           const estimatedPrice = caseData.estimatedPrice || "";
           const confirmedPrice = caseData.confirmedPrice || "";
-          const remarks = (caseData.remarks || "").replace(/"/g, '""');
-          csvContent += `"${title}","${departure}","${departureDate}","${arrival}","${arrivalDate}","${contractType}","${estimatedPrice}","${confirmedPrice}","${remarks}","${createdDate}"\n`;
+          const remarks = (caseData.remarks || "").replace(/\"/g, '""');
+          
+          // CSVの各フィールドにダブルクォートを付けると安全
+          csvContent += `"${groupName}","${groupNameFurigana}","${groupType}","${departureDate}","${arrivalDate}","${(caseData.contractType||"")}",
+            "${estimatedPrice}","${confirmedPrice}","${remarks}","${updatedDate}"\n`;
         });
 
         const encodedUri = encodeURI(csvContent);
