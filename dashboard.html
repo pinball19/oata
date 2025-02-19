@@ -38,6 +38,7 @@
       margin-bottom: 1em;
       border-radius: 5px;
     }
+
     table {
       border-collapse: collapse;
       margin-top: 0.5em;
@@ -81,14 +82,11 @@
     <div id="newCaseForm" style="display: none;">
       <h2>案件情報を入力</h2>
 
-      <!-- 既存フィールドは残しつつ、団体情報+第1～第3希望も追加 -->
-
-      <!-- 団体情報 -->
+      <!-- 既存 + 団体情報 + 第1～第3希望の入力欄例 -->
       <label>団体名: <input type="text" id="groupName"></label><br>
       <label>団体名ふりがな: <input type="text" id="groupNameFurigana"></label><br>
       <label>団体種別: <input type="text" id="groupType"></label><br>
 
-      <!-- 第1希望 -->
       <h3>第1希望</h3>
       <label>列車名: <input type="text" id="trainName"></label><br>
       <label>発地: <input type="text" id="departure"></label><br>
@@ -98,7 +96,6 @@
       <label>添乗員: <input type="number" id="numberOfAttendants"></label><br>
       <label>座席: <input type="text" id="seatType"></label><br>
 
-      <!-- 第2希望 -->
       <h3>第2希望</h3>
       <label>列車名: <input type="text" id="secondTrainName"></label><br>
       <label>発地: <input type="text" id="secondDeparture"></label><br>
@@ -108,7 +105,6 @@
       <label>添乗員: <input type="number" id="secondNumberOfAttendants"></label><br>
       <label>座席: <input type="text" id="secondSeatType"></label><br>
 
-      <!-- 第3希望 -->
       <h3>第3希望</h3>
       <label>列車名: <input type="text" id="thirdTrainName"></label><br>
       <label>発地: <input type="text" id="thirdDeparture"></label><br>
@@ -118,7 +114,6 @@
       <label>添乗員: <input type="number" id="thirdNumberOfAttendants"></label><br>
       <label>座席: <input type="text" id="thirdSeatType"></label><br>
 
-      <!-- 既存フィールド（案件名やマル契種類など）-->
       <hr>
       <h3>基本情報</h3>
       <label>案件名: <input type="text" id="caseTitle"></label><br>
@@ -127,6 +122,7 @@
       <label>マル契種類: <input type="text" id="contractType"></label><br>
       <label>金額（予定）: <input type="number" id="estimatedPrice"></label><br>
       <label>金額（確定）: <input type="number" id="confirmedPrice"></label><br>
+      <!-- 備考欄はあるが、ダッシュボード上では表示しないだけならここは残していてOK -->
       <label>備考: <textarea id="remarks"></textarea></label><br>
 
       <!-- 画像添付欄 -->
@@ -352,15 +348,14 @@
             let div = document.createElement("div");
             div.className = "project-card";
 
-            // 団体名や団体種別など
+            // 画像と備考の表示は削除してほしいので、ここからは表示しません
+            // 代わりに、団体名や希望のサマリーなどを表示します
+
             const groupName = caseData.groupName || caseData.caseTitle || "（未設定）";
             const groupNameFurigana = caseData.groupNameFurigana || "";
             const groupType = caseData.groupType || caseData.contractType || "";
-            const remarks = caseData.remarks || "";
-            const imageUrl = caseData.imageUrl || "";
 
-            // 表示用のHTMLを組み立て
-            // 第1～第3希望をサマリー表で表示します
+            // 第1～第3希望を簡易表示
             const firstTrainName = caseData.trainName || "-";
             const firstDeparture = caseData.departure || "-";
             const firstArrival = caseData.arrival || "-";
@@ -373,21 +368,12 @@
             const thirdDeparture = caseData.thirdDeparture || "-";
             const thirdArrival = caseData.thirdArrival || "-";
 
-            // 大人・小児・添乗員・座席はここでは簡易的に省略してもよいですが、
-            // もし必要なら同様に表示してください。
-            // 例: const numAdults = caseData.numberOfAdults || 0; など
-
+            // HTML組み立て
             div.innerHTML = `
               <h3>団体名: ${groupName}</h3>
               <p>団体名ふりがな: ${groupNameFurigana}</p>
               <p>団体種別: ${groupType}</p>
-              <p>備考: ${remarks}</p>
               <p>更新日時: ${updatedDate}</p>
-
-              ${ imageUrl
-                ? `<div><img src="${imageUrl}" alt="画像" style="max-width: 200px; max-height: 200px;"></div>`
-                : ""
-              }
 
               <!-- 第1～第3希望を小さな表で表示 -->
               <table>
@@ -431,7 +417,8 @@
     }
     loadCases();
 
-    // CSV ダウンロード機能
+    // CSV ダウンロード機能（備考や画像URLはここで出力してもOK／削除してもOK）
+    // ユーザからの要望がダッシュボードの表示だけなので、CSVはそのままでも良いです
     async function downloadCSV() {
       try {
         const snapshot = await db.collection("companies").doc(companyId).collection("threads")
@@ -462,6 +449,7 @@
           const thirdDeparture = caseData.thirdDeparture || "";
           const thirdArrival = caseData.thirdArrival || "";
 
+          // Remarksは一応CSVには残すが、表示はしない
           const remarks = (caseData.remarks || "").replace(/\"/g, '""');
 
           csvContent += `"${groupName}","${groupNameFurigana}","${groupType}","${firstTrainName}","${firstDeparture}","${firstArrival}","${secondTrainName}","${secondDeparture}","${secondArrival}","${thirdTrainName}","${thirdDeparture}","${thirdArrival}","${remarks}","${updatedDate}"\n`;
